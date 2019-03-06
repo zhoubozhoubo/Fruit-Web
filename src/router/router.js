@@ -171,6 +171,31 @@ export const appRouter = [
             }
         ]
     },
+    {
+        path: "/goods",
+        icon: "md-cube",
+        name: "goods",
+        title: "商品管理",
+        component: Main,
+        children: [
+            {
+                path: "type",
+                icon: "ios-folder-open",
+                name: "goods_type",
+                access: 'admin/GoodsTypeCon/index',
+                title: "商品类型",
+                component: () => import('@/views/goods/type.vue')
+            },
+            {
+                path: "list",
+                icon: "ios-document-outline",
+                name: "goods_list",
+                access: 'admin/GoodsCon/index',
+                title: "商品列表",
+                component: () => import('@/views/goods/list.vue')
+            }
+        ]
+    },
     // {
     //     path: '/international',
     //     icon: 'earth',
