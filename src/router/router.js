@@ -74,6 +74,12 @@ export const otherRouter = {
             name: 'interface_response',
             component: () => import('@/views/interface/response.vue')
         },
+        {
+            path: 'address/:id/:name',
+            title: '收货地址',
+            name: 'user_address',
+            component: () => import('@/views/user/address.vue')
+        },
     ]
 };
 

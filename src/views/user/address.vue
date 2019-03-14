@@ -1,5 +1,5 @@
 <style lang="less" scoped>
-    @import './list.less';
+    @import './address.less';
 </style>
 <template>
     <div>
@@ -27,7 +27,8 @@
             <Col span="24">
                 <Card>
                     <p slot="title" style="height: 32px">
-                        <!--<Button type="primary" @click="alertAdd" icon="md-add">新增</Button>-->
+                        <Button type="primary" @click="goBack" icon="md-back">{{user.name}}->收货地址</Button>
+                        <Button type="primary" @click="alertAdd" icon="md-add">新增</Button>
                         <Button type="error" @click="alertDel" icon="md-close" style="float: right">删除</Button>
                     </p>
                     <div>
@@ -45,41 +46,11 @@
         <Modal v-model="modalSetting.show" width="668" :styles="{top: '30px'}" @on-visible-change="doCancel">
             <p slot="header" style="color:#2d8cf0;">
                 <Icon type="md-information-circle"></Icon>
-                <span>{{formItem.id ? '编辑' : '新增'}}用户</span>
+                <span>{{formItem.id ? '编辑' : '新增'}}地址</span>
             </p>
             <Form ref="myForm" :rules="ruleValidate" :model="formItem" :label-width="80">
-                <FormItem label="用户头像" prop="avatarurl">
-                    <div class="demo-upload-list" v-if="formItem.avatarurl">
-                        <img :src="formItem.avatarurl">
-                        <div class="demo-upload-list-cover">
-                            <Icon type="ios-eye-outline" @click.native="handleView()"></Icon>
-                            <Icon type="ios-trash-outline" @click.native="handleImgRemove()"></Icon>
-                        </div>
-                    </div>
-                    <input v-if="formItem.avatarurl" v-model="formItem.avatarurl" type="hidden" name="image">
-                    <Upload type="drag"
-                            :action="uploadUrl"
-                            :headers="uploadHeader"
-                            v-if="!formItem.avatarurl"
-                            :format="['jpg','jpeg','png']"
-                            :max-size="5120"
-                            :on-success="handleImgSuccess"
-                            :on-format-error="handleImgFormatError"
-                            :on-exceeded-size="handleImgMaxSize"
-                            style="display: inline-block;width:58px;">
-                        <div style="width: 58px;height:58px;line-height: 58px;">
-                            <Icon type="ios-camera" size="20"></Icon>
-                        </div>
-                    </Upload>
-                    <Modal title="View Image" v-model="visible">
-                        <img :src="formItem.avatarurl" v-if="visible" style="width: 100%">
-                    </Modal>
-                </FormItem>
                 <FormItem label="用户姓名" prop="name">
                     <Input v-model="formItem.name" placeholder="请输入用户姓名"></Input>
-                </FormItem>
-                <FormItem label="用户昵称" prop="nickname">
-                    <Input v-model="formItem.nickname" placeholder="请输入用户昵称"></Input>
                 </FormItem>
                 <FormItem label="用户电话" prop="phone">
                     <Input v-model="formItem.phone" placeholder="请输入用户电话"></Input>
@@ -96,13 +67,6 @@
                 <Button type="primary" @click="submit" :loading="modalSetting.loading">确定</Button>
             </div>
         </Modal>
-        <!--查看大图-->
-        <Modal :title="formItem.name"
-               v-model="modalSeeingImg.show"
-               class-name="fl-image-modal"
-               @on-visible-change="doCancel">
-            <img :src="formItem.avatarurl" v-if="modalSeeingImg.show" style="width: 100%">
-        </Modal>
         <!--删除确认-->
         <Modal v-model="modalDel.show"
                @on-ok="delAll">
@@ -118,30 +82,6 @@
 </template>
 <script>
     import axios from 'axios';
-    import config from '../../../build/config';
-
-    // 收货地址
-    const addressButton = (vm, h, currentRow, index) => {
-        return h('Button', {
-            props: {
-                type: 'primary'
-            },
-            style: {
-                margin: '0 5px'
-            },
-            on: {
-                'click': () => {
-                    vm.$router.push({
-                        name: 'user_address',
-                        params: {
-                            id: currentRow.id,
-                            name: currentRow.name
-                        }
-                    });
-                }
-            }
-        }, '收货地址');
-    };
 
     // 编辑
     const editButton = (vm, h, currentRow, index) => {
@@ -155,11 +95,9 @@
             on: {
                 'click': () => {
                     vm.formItem.id = currentRow.id;
-                    vm.formItem.avatarurl = currentRow.avatarurl;
                     vm.formItem.name = currentRow.name;
-                    vm.formItem.nickname = currentRow.nickname;
                     vm.formItem.phone = currentRow.phone;
-                    vm.formItem.area = currentRow.area;
+                    vm.formItem.area = currentRow.area_com;
                     vm.formItem.comment = currentRow.comment;
                     vm.modalSetting.show = true;
                     vm.modalSetting.index = index;
@@ -178,7 +116,7 @@
             },
             on: {
                 'on-ok': () => {
-                    axios.get('UserCon/del', {
+                    axios.get('UserAddressCon/del', {
                         params: {
                             id: currentRow.id
                         }
@@ -208,7 +146,7 @@
     };
 
     export default {
-        name: 'user_list',
+        name: 'user_address',
         data () {
             // 表单电话验证
             const validatePhone = function (rule, value, callback) {
@@ -230,6 +168,11 @@
                 }
             };
             return {
+                // 用户信息
+                user: {
+                    id: 0,
+                    name: ''
+                },
                 // 初始化表格
                 columnsList: [
                     {
@@ -245,20 +188,9 @@
                         align: 'center'
                     },
                     {
-                        title: '用户头像',
-                        align: 'center',
-                        key: 'avatarurl',
-                        width: 120
-                    },
-                    {
                         title: '用户姓名',
                         align: 'center',
                         key: 'name'
-                    },
-                    {
-                        title: '用户昵称',
-                        align: 'center',
-                        key: 'nickname'
                     },
                     {
                         title: '用户电话',
@@ -266,9 +198,30 @@
                         key: 'phone'
                     },
                     {
-                        title: '用户地址',
+                        title: '省',
                         align: 'center',
-                        key: 'area_com'
+                        key: 'province'
+                    },
+                    {
+                        title: '市',
+                        align: 'center',
+                        key: 'city'
+                    },
+                    {
+                        title: '县',
+                        align: 'center',
+                        key: 'area'
+                    },
+                    {
+                        title: '详细地址',
+                        align: 'center',
+                        key: 'comment'
+                    },
+                    {
+                        title: '默认',
+                        align: 'center',
+                        key: 'is_default',
+                        width: 100
                     },
                     {
                         title: '状态',
@@ -317,9 +270,8 @@
                 },
                 // 初始化表单数据
                 formItem: {
-                    avatarurl: '',
+                    user_id: 0,
                     name: '',
-                    nickname: '',
                     phone: '',
                     area: [],
                     comment: '',
@@ -327,14 +279,8 @@
                 },
                 // 表单验证规则
                 ruleValidate: {
-                    avatarurl: [
-                        { required: true, message: '请上传用户头像', trigger: 'change' }
-                    ],
                     name: [
                         { required: true, message: '用户姓名不能为空', trigger: 'blur' }
-                    ],
-                    nickname: [
-                        { required: true, message: '用户昵称不能为空', trigger: 'blur' }
                     ],
                     phone: [
                         { required: true, message: '用户电话不能为空', trigger: 'blur' },
@@ -349,10 +295,6 @@
                 idList: '',
                 // 编辑/添加弹窗中显示大图
                 visible: false,
-                // 上传地址
-                uploadUrl: '',
-                // 上传头部信息
-                uploadHeader: {},
                 // 地区列表数据
                 areaData: []
             };
@@ -360,10 +302,16 @@
         components: {
         },
         created () {
+            this.user.id = this.$route.params.id.toString();
+            this.user.name = this.$route.params.name.toString();
             this.init();
             this.getList();
         },
         methods: {
+            // 返回上一页
+            goBack () {
+                this.$router.back();
+            },
             // 初始化页面
             init () {
                 let vm = this;
@@ -373,7 +321,6 @@
                         item.render = (h, param) => {
                             let currentRowData = vm.tableData[param.index];
                             return h('div', [
-                                addressButton(vm, h, currentRowData, param.index),
                                 editButton(vm, h, currentRowData, param.index),
                                 deleteButton(vm, h, currentRowData, param.index)
                             ]);
@@ -410,6 +357,55 @@
                         };
                     }
                     // 状态列
+                    if (item.key === 'is_default') {
+                        item.render = (h, param) => {
+                            let currentRowData = vm.tableData[param.index];
+                            return h('i-switch', {
+                                attrs: {
+                                    size: 'large'
+                                },
+                                props: {
+                                    'true-value': 1,
+                                    'false-value': 0,
+                                    value: currentRowData.is_default
+                                },
+                                on: {
+                                    'on-change': function (status) {
+                                        axios.get('UserAddressCon/changeDefault', {
+                                            params: {
+                                                is_default: status,
+                                                id: currentRowData.id
+                                            }
+                                        }).then(function (response) {
+                                            let res = response.data;
+                                            if (res.code === 1) {
+                                                vm.$Message.success(res.msg);
+                                            } else {
+                                                if (res.code === -14) {
+                                                    vm.$store.commit('logout', vm);
+                                                    vm.$router.push({
+                                                        name: 'login'
+                                                    });
+                                                } else {
+                                                    vm.$Message.error(res.msg);
+                                                    vm.getList();
+                                                }
+                                            }
+                                            vm.cancel();
+                                        });
+                                    }
+                                }
+                            }, [
+                                h('span', {
+                                    slot: 'open'
+                                }, '默认'),
+                                h('span', {
+                                    slot: 'close'
+                                }, '否')
+                            ]);
+                        };
+                    }
+                    // 状态列
                     if (item.key === 'status') {
                         item.render = (h, param) => {
                             let currentRowData = vm.tableData[param.index];
@@ -424,7 +420,7 @@
                                 },
                                 on: {
                                     'on-change': function (status) {
-                                        axios.get('UserCon/changeStatus', {
+                                        axios.get('UserAddressCon/changeStatus', {
                                             params: {
                                                 status: status,
                                                 id: currentRowData.id
@@ -459,8 +455,6 @@
                         };
                     }
                 });
-                this.uploadUrl = config.baseUrl + 'Index/upload';
-                this.uploadHeader = {'ApiAuth': sessionStorage.getItem('apiAuth')};
                 this.getArea();
             },
             // 获取地区数据
@@ -484,7 +478,8 @@
                 this.$refs['myForm'].validate((valid) => {
                     if (valid) {
                         self.modalSetting.loading = true;
-                        let target = 'UserCon/aoe';
+                        let target = 'UserAddressCon/aoe';
+                        this.formItem.user_id = this.user.id;
                         axios.post(target, this.formItem).then(function (response) {
                             if (response.data.code === 1) {
                                 self.$Message.success(response.data.msg);
@@ -533,10 +528,11 @@
             getList () {
                 let vm = this;
                 vm.tableLoading = true;
-                axios.get('UserCon/index', {
+                axios.get('UserAddressCon/index', {
                     params: {
                         page: vm.tableShow.currentPage,
                         size: vm.tableShow.pageSize,
+                        id: vm.user.id,
                         name: vm.searchConf.name,
                         status: vm.searchConf.status
                     }
@@ -600,7 +596,7 @@
                     vm.$Message.error('请选择要删除的数据');
                     vm.cancel();
                 } else {
-                    axios.get('UserCon/del', {
+                    axios.get('UserAddressCon/del', {
                         params: {
                             id: vm.idList
                         }

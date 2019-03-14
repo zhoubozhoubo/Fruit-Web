@@ -237,6 +237,7 @@
     export default {
         name: 'goods_list',
         data () {
+            // 表单价格验证
             const validateMoney = function (rule, value, callback) {
                 let moneyTest = /^(([1-9]\d{0,3})|0)(\.\d{0,2})?$/;
                 if (value === '') {
