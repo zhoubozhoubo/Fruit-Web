@@ -172,6 +172,23 @@ export const appRouter = [
         ]
     },
     {
+        path: "/user",
+        icon: "md-cube",
+        name: "user",
+        title: "用户管理",
+        component: Main,
+        children: [
+            {
+                path: "list",
+                icon: "ios-folder-open",
+                name: "user_list",
+                access: 'admin/UserCon/index',
+                title: "用户管理",
+                component: () => import('@/views/user/list.vue')
+            }
+        ]
+    },
+    {
         path: "/goods",
         icon: "md-cube",
         name: "goods",

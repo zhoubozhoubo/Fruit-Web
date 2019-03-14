@@ -8,11 +8,6 @@
                 <Card style="margin-bottom: 10px">
                     <Form inline>
                         <FormItem style="margin-bottom: 0">
-                            <Select v-model="searchConf.type_id" clearable placeholder="请选择类型" style="width:100px">
-                                <Option v-for="(type, typeIndex) in typeList" :value="type.id" :key="typeIndex">{{type.name}}</Option>
-                            </Select>
-                        </FormItem>
-                        <FormItem style="margin-bottom: 0">
                             <Input v-model="searchConf.name" clearable placeholder="请输入名称"></Input>
                         </FormItem>
                         <FormItem style="margin-bottom: 0">
@@ -32,7 +27,7 @@
             <Col span="24">
                 <Card>
                     <p slot="title" style="height: 32px">
-                        <Button type="primary" @click="alertAdd" icon="md-add">新增</Button>
+                        <!--<Button type="primary" @click="alertAdd" icon="md-add">新增</Button>-->
                         <Button type="error" @click="alertDel" icon="md-close" style="float: right">删除</Button>
                     </p>
                     <div>
@@ -50,30 +45,22 @@
         <Modal v-model="modalSetting.show" width="668" :styles="{top: '30px'}" @on-visible-change="doCancel">
             <p slot="header" style="color:#2d8cf0;">
                 <Icon type="md-information-circle"></Icon>
-                <span>{{formItem.id ? '编辑' : '新增'}}商品</span>
+                <span>{{formItem.id ? '编辑' : '新增'}}用户</span>
             </p>
             <Form ref="myForm" :rules="ruleValidate" :model="formItem" :label-width="80">
-                <FormItem label="商品类型" prop="type_id">
-                    <Select v-model="formItem.type_id">
-                        <Option v-for="(type, typeIndex) in typeList" :value="type.id" :key="typeIndex">{{type.name}}</Option>
-                    </Select>
-                </FormItem>
-                <FormItem label="商品名称" prop="name">
-                    <Input v-model="formItem.name" placeholder="请输入商品名称"></Input>
-                </FormItem>
-                <FormItem label="商品封面" prop="img">
-                    <div class="demo-upload-list" v-if="formItem.img">
-                        <img :src="formItem.img">
+                <FormItem label="用户头像" prop="avatarurl">
+                    <div class="demo-upload-list" v-if="formItem.avatarurl">
+                        <img :src="formItem.avatarurl">
                         <div class="demo-upload-list-cover">
                             <Icon type="ios-eye-outline" @click.native="handleView()"></Icon>
                             <Icon type="ios-trash-outline" @click.native="handleImgRemove()"></Icon>
                         </div>
                     </div>
-                    <input v-if="formItem.img" v-model="formItem.img" type="hidden" name="image">
+                    <input v-if="formItem.avatarurl" v-model="formItem.avatarurl" type="hidden" name="image">
                     <Upload type="drag"
                             :action="uploadUrl"
                             :headers="uploadHeader"
-                            v-if="!formItem.img"
+                            v-if="!formItem.avatarurl"
                             :format="['jpg','jpeg','png']"
                             :max-size="5120"
                             :on-success="handleImgSuccess"
@@ -85,27 +72,23 @@
                         </div>
                     </Upload>
                     <Modal title="View Image" v-model="visible">
-                        <img :src="formItem.img" v-if="visible" style="width: 100%">
+                        <img :src="formItem.avatarurl" v-if="visible" style="width: 100%">
                     </Modal>
                 </FormItem>
-                <FormItem label="商品价格" prop="money">
-                    <Input v-model="formItem.money" placeholder="请输入商品价格"></Input>
+                <FormItem label="用户姓名" prop="name">
+                    <Input v-model="formItem.name" placeholder="请输入用户姓名"></Input>
                 </FormItem>
-                <FormItem label="商品原价" prop="original_money">
-                    <Input v-model="formItem.original_money" placeholder="请输入商品原价格"></Input>
+                <FormItem label="用户昵称" prop="nickname">
+                    <Input v-model="formItem.nickname" placeholder="请输入用户昵称"></Input>
                 </FormItem>
-                <FormItem label="商品运费" prop="other_money">
-                    <Input v-model="formItem.other_money" placeholder="请输入商品运费"></Input>
+                <FormItem label="用户电话" prop="phone">
+                    <Input v-model="formItem.phone" placeholder="请输入用户电话"></Input>
                 </FormItem>
-                <FormItem style="height: 400px;" label="商品详情" prop="comment">
-                    <quill-editor
-                            style="height: 300px;"
-                            v-model="formItem.comment"
-                            ref="myQuillEditor"
-                            :options="editorOption"
-                            @blur="onEditorBlur($event)" @focus="onEditorFocus($event)"
-                            @change="onEditorChange($event)">
-                    </quill-editor>
+                <FormItem label="用户地区" prop="area">
+                    <Cascader v-model="formItem.area" :data="areaData" change-on-select></Cascader>
+                </FormItem>
+                <FormItem label="详细地址" prop="comment">
+                    <Input v-model="formItem.comment" placeholder="请输入详细地址"></Input>
                 </FormItem>
             </Form>
             <div slot="footer">
@@ -118,15 +101,7 @@
                v-model="modalSeeingImg.show"
                class-name="fl-image-modal"
                @on-visible-change="doCancel">
-            <img :src="formItem.img" v-if="modalSeeingImg.show" style="width: 100%">
-        </Modal>
-        <!--查看详情-->
-        <Modal v-model="modalSeeingCon.show"
-               :title="formItem.name"
-               width="1000"
-               :styles="{top: '30px'}"
-               @on-visible-change="doCancel">
-            <div v-html="formItem.comment"></div>
+            <img :src="formItem.avatarurl" v-if="modalSeeingImg.show" style="width: 100%">
         </Modal>
         <!--删除确认-->
         <Modal v-model="modalDel.show"
@@ -144,10 +119,6 @@
 <script>
     import axios from 'axios';
     import config from '../../../build/config';
-    import {quillEditor} from 'vue-quill-editor';
-    import 'quill/dist/quill.core.css';
-    import 'quill/dist/quill.snow.css';
-    import 'quill/dist/quill.bubble.css';
 
     // 编辑
     const editButton = (vm, h, currentRow, index) => {
@@ -161,12 +132,11 @@
             on: {
                 'click': () => {
                     vm.formItem.id = currentRow.id;
-                    vm.formItem.type_id = currentRow.type_id;
-                    vm.formItem.img = currentRow.img;
+                    vm.formItem.avatarurl = currentRow.avatarurl;
                     vm.formItem.name = currentRow.name;
-                    vm.formItem.money = currentRow.money;
-                    vm.formItem.original_money = currentRow.original_money;
-                    vm.formItem.other_money = currentRow.other_money;
+                    vm.formItem.nickname = currentRow.nickname;
+                    vm.formItem.phone = currentRow.phone;
+                    vm.formItem.area = currentRow.area;
                     vm.formItem.comment = currentRow.comment;
                     vm.modalSetting.show = true;
                     vm.modalSetting.index = index;
@@ -185,7 +155,7 @@
             },
             on: {
                 'on-ok': () => {
-                    axios.get('GoodsCon/del', {
+                    axios.get('UserCon/del', {
                         params: {
                             id: currentRow.id
                         }
@@ -214,35 +184,15 @@
         ]);
     };
 
-    // 查看详情
-    const seeButton = (vm, h, currentRow, index) => {
-        return h('Button', {
-            props: {
-                type: 'success',
-                size: 'small'
-            },
-            style: {
-                margin: '0 5px'
-            },
-            on: {
-                'click': () => {
-                    vm.formItem.name = currentRow.name;
-                    vm.formItem.comment = currentRow.comment;
-                    vm.modalSeeingCon.show = true;
-                }
-            }
-        }, '查看');
-    };
-
     export default {
-        name: 'goods_list',
+        name: 'user_list',
         data () {
-            const validateMoney = function (rule, value, callback) {
-                let moneyTest = /^(([1-9]\d{0,3})|0)(\.\d{0,2})?$/;
+            const validatePhone = function (rule, value, callback) {
+                let phoneTest = /^1[34578]\d{9}$/;
                 if (value === '') {
-                    return callback(new Error('请输入价格'));
-                } else if (!moneyTest.test(value)) {
-                    return callback(new Error('请正确输入价格(0~9999.99)'));
+                    return callback(new Error('请输入电话'));
+                } else if (!phoneTest.test(value)) {
+                    return callback(new Error('请正确输入电话'));
                 } else {
                     callback();
                 }
@@ -263,56 +213,30 @@
                         align: 'center'
                     },
                     {
-                        title: '商品封面',
+                        title: '用户头像',
                         align: 'center',
-                        key: 'img',
+                        key: 'avatarurl',
                         width: 120
                     },
                     {
-                        title: '商品名称',
+                        title: '用户姓名',
                         align: 'center',
                         key: 'name'
                     },
                     {
-                        title: '商品类型',
+                        title: '用户昵称',
                         align: 'center',
-                        key: 'type_name'
+                        key: 'nickname'
                     },
                     {
-                        title: '商品价格',
+                        title: '用户电话',
                         align: 'center',
-                        key: 'money',
-                        width: 120
+                        key: 'phone'
                     },
                     {
-                        title: '商品原价',
+                        title: '用户地址',
                         align: 'center',
-                        key: 'original_money',
-                        width: 120
-                    },
-                    {
-                        title: '商品运费',
-                        align: 'center',
-                        key: 'other_money',
-                        width: 120
-                    },
-                    {
-                        title: '商品销量',
-                        align: 'center',
-                        key: 'number',
-                        width: 100
-                    },
-                    {
-                        title: '商品详情',
-                        align: 'center',
-                        key: 'comment',
-                        width: 100
-                    },
-                    {
-                        title: '推荐',
-                        align: 'center',
-                        key: 'recommend',
-                        width: 100
+                        key: 'area_com'
                     },
                     {
                         title: '状态',
@@ -350,10 +274,6 @@
                     loading: false,
                     index: 0
                 },
-                // 初始化详情弹出框
-                modalSeeingCon: {
-                    show: false
-                },
                 // 初始化图片弹出框
                 modalSeeingImg: {
                     show: false
@@ -366,41 +286,30 @@
                 },
                 // 初始化表单数据
                 formItem: {
-                    type_id: '',
+                    avatarurl: '',
                     name: '',
-                    img: '',
-                    money: '',
-                    original_money: '',
-                    other_money: '',
+                    nickname: '',
+                    phone: '',
+                    area: [],
                     comment: '',
                     id: 0
                 },
                 // 表单验证规则
                 ruleValidate: {
-                    type_id: [
-                        { required: true, message: '请选择商品类型', trigger: 'change', type: 'number' }
+                    avatarurl: [
+                        { required: true, message: '请上传用户头像', trigger: 'change' }
                     ],
                     name: [
-                        { required: true, message: '商品名称不能为空', trigger: 'blur' }
+                        { required: true, message: '用户姓名不能为空', trigger: 'blur' }
                     ],
-                    money: [
-                        { required: true, message: '商品价格不能为空', trigger: 'blur' },
-                        { validator: validateMoney, trigger: 'blur' }
+                    nickname: [
+                        { required: true, message: '用户昵称不能为空', trigger: 'blur' }
                     ],
-                    original_money: [
-                        { required: true, message: '商品原价格不能为空', trigger: 'blur' },
-                        { validator: validateMoney, trigger: 'blur' }
-                    ],
-                    other_money: [
-                        { required: true, message: '商品运费不能为空', trigger: 'blur' },
-                        { validator: validateMoney, trigger: 'blur' }
-                    ],
-                    img: [
-                        { required: true, message: '请上传商品封面', trigger: 'change' }
+                    phone: [
+                        { required: true, message: '用户电话不能为空', trigger: 'blur' },
+                        { validator: validatePhone, trigger: 'blur' }
                     ]
                 },
-                // 商品二级类型
-                typeList: [],
                 // 选中id列表
                 idList: '',
                 // 编辑/添加弹窗中显示大图
@@ -409,26 +318,11 @@
                 uploadUrl: '',
                 // 上传头部信息
                 uploadHeader: {},
-                // 初始化富文本编辑器
-                editorOption: {
-                    modules: {
-                        toolbar: [
-                            [{ 'size': ['small', false, 'large', 'huge'] }],
-                            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-                            ['bold', 'italic', 'underline', 'strike', 'blockquote', 'clean'],
-                            [{ 'header': 1 }, { 'header': 2 }],
-                            [{'list': 'ordered'}, { 'list': 'bullet' }],
-                            [{'script': 'sub'}, { 'script': 'super' }],
-                            [{ 'align': [] }],
-                            [{ 'color': [] }, { 'background': [] }],
-                            ['image']
-                        ]
-                    }
-                }
+                // 地区列表数据
+                areaData: []
             };
         },
         components: {
-            quillEditor
         },
         created () {
             this.init();
@@ -450,10 +344,10 @@
                         };
                     }
                     // 图片列
-                    if (item.key === 'img') {
+                    if (item.key === 'avatarurl') {
                         item.render = (h, param) => {
                             let currentRowData = vm.tableData[param.index];
-                            if (currentRowData.img) {
+                            if (currentRowData.avatarurl) {
                                 return h('img', {
                                     style: {
                                         width: '40px',
@@ -462,13 +356,13 @@
                                         'margin-top': '5px'
                                     },
                                     attrs: {
-                                        src: currentRowData.img,
+                                        src: currentRowData.avatarurl,
                                         shape: 'square',
                                         size: 'large'
                                     },
                                     on: {
                                         click: (e) => {
-                                            this.formItem.img = currentRowData.img;
+                                            this.formItem.avatarurl = currentRowData.avatarurl;
                                             this.formItem.name = currentRowData.name;
                                             vm.modalSeeingImg.show = true;
                                         }
@@ -477,62 +371,6 @@
                             } else {
                                 return h('Tag', {}, '暂无图片');
                             }
-                        };
-                    }
-                    // 详情列
-                    if (item.key === 'comment') {
-                        item.render = (h, param) => {
-                            let currentRowData = vm.tableData[param.index];
-                            return h('div', [seeButton(vm, h, currentRowData, param.index)]);
-                        };
-                    }
-                    // 状态列
-                    if (item.key === 'recommend') {
-                        item.render = (h, param) => {
-                            let currentRowData = vm.tableData[param.index];
-                            return h('i-switch', {
-                                attrs: {
-                                    size: 'large'
-                                },
-                                props: {
-                                    'true-value': 1,
-                                    'false-value': 0,
-                                    value: currentRowData.recommend
-                                },
-                                on: {
-                                    'on-change': function (recommend) {
-                                        axios.get('GoodsCon/changeRecommend', {
-                                            params: {
-                                                recommend: recommend,
-                                                id: currentRowData.id
-                                            }
-                                        }).then(function (response) {
-                                            let res = response.data;
-                                            if (res.code === 1) {
-                                                vm.$Message.success(res.msg);
-                                            } else {
-                                                if (res.code === -14) {
-                                                    vm.$store.commit('logout', vm);
-                                                    vm.$router.push({
-                                                        name: 'login'
-                                                    });
-                                                } else {
-                                                    vm.$Message.error(res.msg);
-                                                    vm.getList();
-                                                }
-                                            }
-                                            vm.cancel();
-                                        });
-                                    }
-                                }
-                            }, [
-                                h('span', {
-                                    slot: 'open'
-                                }, '推荐'),
-                                h('span', {
-                                    slot: 'close'
-                                }, '否')
-                            ]);
                         };
                     }
                     // 状态列
@@ -550,7 +388,7 @@
                                 },
                                 on: {
                                     'on-change': function (status) {
-                                        axios.get('GoodsCon/changeStatus', {
+                                        axios.get('UserCon/changeStatus', {
                                             params: {
                                                 status: status,
                                                 id: currentRowData.id
@@ -587,13 +425,13 @@
                 });
                 this.uploadUrl = config.baseUrl + 'Index/upload';
                 this.uploadHeader = {'ApiAuth': sessionStorage.getItem('apiAuth')};
-                this.getGoodsType();
+                this.getArea();
             },
-            // 获取商品二级类型数据
-            getGoodsType () {
+            // 获取地区数据
+            getArea () {
                 let self = this;
-                axios.get('Common/secondGoodsTypeList').then(function (response) {
-                    self.typeList = response.data.data.list;
+                axios.get('Common/area').then(function (response) {
+                    self.areaData = response.data.data;
                 });
             },
             // 新增数据弹出框
@@ -610,7 +448,7 @@
                 this.$refs['myForm'].validate((valid) => {
                     if (valid) {
                         self.modalSetting.loading = true;
-                        let target = 'GoodsCon/aoe';
+                        let target = 'UserCon/aoe';
                         axios.post(target, this.formItem).then(function (response) {
                             if (response.data.code === 1) {
                                 self.$Message.success(response.data.msg);
@@ -659,7 +497,7 @@
             getList () {
                 let vm = this;
                 vm.tableLoading = true;
-                axios.get('GoodsCon/index', {
+                axios.get('UserCon/index', {
                     params: {
                         page: vm.tableShow.currentPage,
                         size: vm.tableShow.pageSize,
@@ -690,7 +528,7 @@
                 this.visible = true;
             },
             handleImgRemove () {
-                this.formItem.img = '';
+                this.formItem.avatarurl = '';
             },
             handleImgFormatError (file) {
                 this.$Notice.warning({
@@ -707,17 +545,10 @@
             handleImgSuccess (response) {
                 if (response.code === 1) {
                     this.$Message.success(response.msg);
-                    this.formItem.img = response.data.fileUrl;
+                    this.formItem.avatarurl = response.data.fileUrl;
                 } else {
                     this.$Message.error(response.msg);
                 }
-            },
-            // 富文本编辑器一系列
-            onEditorBlur () {
-            },
-            onEditorFocus () {
-            },
-            onEditorChange () {
             },
             // 选中删除id列表
             handleRowChange (selection) {
@@ -734,7 +565,7 @@
                     vm.$Message.error('请选择要删除的数据');
                     vm.cancel();
                 } else {
-                    axios.get('GoodsCon/del', {
+                    axios.get('UserCon/del', {
                         params: {
                             id: vm.idList
                         }
