@@ -27,7 +27,7 @@
             <Col span="24">
                 <Card>
                     <p slot="title" style="height: 32px">
-                        <Button type="primary" @click="goBack" icon="md-back">{{user.name}}->收货地址</Button>
+                        <Button type="info" @click="goBack" icon="ios-arrow-back">{{user.name}}->收货地址</Button>
                         <Button type="primary" @click="alertAdd" icon="md-add">新增</Button>
                         <Button type="error" @click="alertDel" icon="md-close" style="float: right">删除</Button>
                     </p>
@@ -302,9 +302,11 @@
         components: {
         },
         created () {
+            this.init();
+        },
+        activated () {
             this.user.id = this.$route.params.id.toString();
             this.user.name = this.$route.params.name.toString();
-            this.init();
             this.getList();
         },
         methods: {

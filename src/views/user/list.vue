@@ -124,10 +124,10 @@
     const addressButton = (vm, h, currentRow, index) => {
         return h('Button', {
             props: {
-                type: 'primary'
+                type: 'success'
             },
             style: {
-                margin: '0 5px'
+                margin: '5px 0 0'
             },
             on: {
                 'click': () => {
@@ -150,7 +150,7 @@
                 type: 'primary'
             },
             style: {
-                margin: '0 5px'
+                margin: '5px'
             },
             on: {
                 'click': () => {
@@ -196,7 +196,7 @@
         }, [
             h('Button', {
                 style: {
-                    margin: '0 5px'
+                    margin: '5px'
                 },
                 props: {
                     type: 'error',
