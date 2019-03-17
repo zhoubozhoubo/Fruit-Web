@@ -32,6 +32,33 @@
                         <Option v-for="(type, typeIndex) in typeList" :value="type.id" :key="typeIndex">{{type.name}}</Option>
                     </Select>
                 </FormItem>
+                <FormItem label="类型封面" prop="img">
+                    <div class="demo-upload-list" v-if="formItem.img">
+                        <img :src="formItem.img">
+                        <div class="demo-upload-list-cover">
+                            <Icon type="ios-eye-outline" @click.native="handleView()"></Icon>
+                            <Icon type="ios-trash-outline" @click.native="handleImgRemove()"></Icon>
+                        </div>
+                    </div>
+                    <input v-if="formItem.img" v-model="formItem.img" type="hidden" name="image">
+                    <Upload type="drag"
+                            :action="uploadUrl"
+                            :headers="uploadHeader"
+                            v-if="!formItem.img"
+                            :format="['jpg','jpeg','png']"
+                            :max-size="5120"
+                            :on-success="handleImgSuccess"
+                            :on-format-error="handleImgFormatError"
+                            :on-exceeded-size="handleImgMaxSize"
+                            style="display: inline-block;width:58px;">
+                        <div style="width: 58px;height:58px;line-height: 58px;">
+                            <Icon type="ios-camera" size="20"></Icon>
+                        </div>
+                    </Upload>
+                    <Modal title="View Image" v-model="visible">
+                        <img :src="formItem.img" v-if="visible" style="width: 100%">
+                    </Modal>
+                </FormItem>
                 <FormItem label="类型描述" prop="describe">
                     <Input v-model="formItem.describe" :autosize="{maxRows: 10, minRows: 4}" type="textarea" placeholder="请输入类型描述"></Input>
                 </FormItem>
@@ -50,6 +77,7 @@
 
 <script>
     import axios from 'axios';
+    import config from '../../../build/config';
 
     // 编辑
     const editButton = (vm, h, currentRow, index) => {
@@ -65,6 +93,7 @@
                     vm.formItem.id = currentRow.id;
                     vm.formItem.name = currentRow.name;
                     vm.formItem.fid = currentRow.fid;
+                    vm.formItem.img = currentRow.img;
                     vm.formItem.describe = currentRow.describe;
                     vm.formItem.sort = currentRow.sort;
                     vm.modalSetting.show = true;
@@ -114,7 +143,7 @@
     };
 
     export default {
-        name: 'system_menu',
+        name: 'goods_type',
         data () {
             return {
                 // 初始化表格
@@ -129,6 +158,12 @@
                         title: '类型名称',
                         align: 'left',
                         key: 'showName',
+                        width: 200
+                    },
+                    {
+                        title: '类型封面',
+                        align: 'center',
+                        key: 'img',
                         width: 200
                     },
                     {
@@ -170,6 +205,7 @@
                 formItem: {
                     name: '',
                     fid: 0,
+                    img: '',
                     describe: '',
                     sort: 0,
                     id: 0
@@ -178,10 +214,19 @@
                 ruleValidate: {
                     name: [
                         { required: true, message: '类型名称不能为空', trigger: 'blur' }
+                    ],
+                    img: [
+                        { required: true, message: '请上传商品封面', trigger: 'change' }
                     ]
                 },
                 // 商品一级类型
-                typeList: []
+                typeList: [],
+                // 编辑/添加弹窗中显示大图
+                visible: false,
+                // 上传地址
+                uploadUrl: '',
+                // 上传头部信息
+                uploadHeader: {}
             };
         },
         created () {
@@ -201,6 +246,36 @@
                                 editButton(vm, h, currentRowData, param.index),
                                 deleteButton(vm, h, currentRowData, param.index)
                             ]);
+                        };
+                    }
+                    // 图片列
+                    if (item.key === 'img') {
+                        item.render = (h, param) => {
+                            let currentRowData = vm.tableData[param.index];
+                            if (currentRowData.img) {
+                                return h('img', {
+                                    style: {
+                                        width: '40px',
+                                        height: '40px',
+                                        cursor: 'pointer',
+                                        'margin-top': '5px'
+                                    },
+                                    attrs: {
+                                        src: currentRowData.img,
+                                        shape: 'square',
+                                        size: 'large'
+                                    },
+                                    on: {
+                                        click: (e) => {
+                                            this.formItem.img = currentRowData.img;
+                                            this.formItem.name = currentRowData.name;
+                                            vm.modalSeeingImg.show = true;
+                                        }
+                                    }
+                                });
+                            } else {
+                                return h('Tag', {}, '暂无图片');
+                            }
                         };
                     }
                     // 状态列
@@ -253,6 +328,8 @@
                         };
                     }
                 });
+                this.uploadUrl = config.baseUrl + 'Index/upload';
+                this.uploadHeader = {'ApiAuth': sessionStorage.getItem('apiAuth')};
                 this.getGoodsType();
             },
             // 获取商品一级类型数据
@@ -318,6 +395,33 @@
                         }
                     }
                 });
+            },
+            // 上传图片一系列
+            handleView () {
+                this.visible = true;
+            },
+            handleImgRemove () {
+                this.formItem.img = '';
+            },
+            handleImgFormatError (file) {
+                this.$Notice.warning({
+                    title: '文件类型不合法',
+                    desc: file.name + '的文件类型不正确，请上传jpg或者png图片。'
+                });
+            },
+            handleImgMaxSize (file) {
+                this.$Notice.warning({
+                    title: '文件大小不合法',
+                    desc: file.name + '太大啦请上传小于5M的文件。'
+                });
+            },
+            handleImgSuccess (response) {
+                if (response.code === 1) {
+                    this.$Message.success(response.msg);
+                    this.formItem.img = response.data.fileUrl;
+                } else {
+                    this.$Message.error(response.msg);
+                }
             }
         }
     };

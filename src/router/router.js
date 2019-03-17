@@ -219,6 +219,23 @@ export const appRouter = [
             }
         ]
     },
+    {
+        path: "/orders",
+        icon: "md-cube",
+        name: "orders",
+        title: "订单管理",
+        component: Main,
+        children: [
+            {
+                path: "list",
+                icon: "ios-document-outline",
+                name: "orders_list",
+                access: 'admin/OrdersCon/index',
+                title: "订单管理",
+                component: () => import('@/views/orders/list.vue')
+            }
+        ]
+    },
     // {
     //     path: '/international',
     //     icon: 'earth',
