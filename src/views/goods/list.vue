@@ -400,7 +400,7 @@
                         { required: true, message: '请上传商品封面', trigger: 'change' }
                     ]
                 },
-                // 商品二级类型
+                // 商品类型
                 typeList: [],
                 // 选中id列表
                 idList: '',
@@ -590,10 +590,10 @@
                 this.uploadHeader = {'ApiAuth': sessionStorage.getItem('apiAuth')};
                 this.getGoodsType();
             },
-            // 获取商品二级类型数据
+            // 获取商品类型数据
             getGoodsType () {
                 let self = this;
-                axios.get('Common/secondGoodsTypeList').then(function (response) {
+                axios.get('Common/goodsTypeList').then(function (response) {
                     self.typeList = response.data.data.list;
                 });
             },

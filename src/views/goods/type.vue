@@ -6,12 +6,37 @@
     <div>
         <Row>
             <Col span="24">
+                <Card style="margin-bottom: 10px">
+                    <Form inline>
+                        <FormItem style="margin-bottom: 0">
+                            <Input v-model="searchConf.name" clearable placeholder="请输入名称"></Input>
+                        </FormItem>
+                        <FormItem style="margin-bottom: 0">
+                            <Select v-model="searchConf.status" clearable placeholder='请选择状态' style="width:100px">
+                                <Option :value="1">启用</Option>
+                                <Option :value="0">禁用</Option>
+                            </Select>
+                        </FormItem>
+                        <FormItem style="margin-bottom: 0">
+                            <Button type="primary" @click="search">查询/刷新</Button>
+                        </FormItem>
+                    </Form>
+                </Card>
+            </Col>
+        </Row>
+        <Row>
+            <Col span="24">
                 <Card>
                     <p slot="title" style="height: 32px">
                         <Button type="primary" @click="alertAdd" icon="md-add">新增</Button>
                     </p>
                     <div>
                         <Table :loading="tableLoading" :columns="columnsList" :data="tableData" border disabled-hover></Table>
+                    </div>
+                    <div class="margin-top-15" style="text-align: center">
+                        <Page :total="tableShow.listCount" :current="tableShow.currentPage"
+                              :page-size="tableShow.pageSize" @on-change="changePage"
+                              @on-page-size-change="changeSize" show-elevator show-sizer show-total></Page>
                     </div>
                 </Card>
             </Col>
@@ -25,12 +50,6 @@
             <Form ref="myForm" :rules="ruleValidate" :model="formItem" :label-width="80">
                 <FormItem label="类型名称" prop="name">
                     <Input v-model="formItem.name" placeholder="请输入类型名称"></Input>
-                </FormItem>
-                <FormItem label="父级类型" prop="fid">
-                    <Select v-model="formItem.fid" filterable>
-                        <Option :value="0">顶级类型</Option>
-                        <Option v-for="(type, typeIndex) in typeList" :value="type.id" :key="typeIndex">{{type.name}}</Option>
-                    </Select>
                 </FormItem>
                 <FormItem label="类型封面" prop="img">
                     <div class="demo-upload-list" v-if="formItem.img">
@@ -72,6 +91,13 @@
                 <Button type="primary" @click="submit" :loading="modalSetting.loading">确定</Button>
             </div>
         </Modal>
+        <!--查看大图-->
+        <Modal :title="formItem.name"
+               v-model="modalSeeingImg.show"
+               class-name="fl-image-modal"
+               @on-visible-change="doCancel">
+            <img :src="formItem.img" v-if="modalSeeingImg.show" style="width: 100%">
+        </Modal>
     </div>
 </template>
 
@@ -92,7 +118,6 @@
                 'click': () => {
                     vm.formItem.id = currentRow.id;
                     vm.formItem.name = currentRow.name;
-                    vm.formItem.fid = currentRow.fid;
                     vm.formItem.img = currentRow.img;
                     vm.formItem.describe = currentRow.describe;
                     vm.formItem.sort = currentRow.sort;
@@ -157,7 +182,7 @@
                     {
                         title: '类型名称',
                         align: 'left',
-                        key: 'showName',
+                        key: 'name',
                         width: 200
                     },
                     {
@@ -195,16 +220,31 @@
                 tableLoading: false,
                 // 表格数据
                 tableData: [],
+                // 表格分页属性
+                tableShow: {
+                    currentPage: 1,
+                    pageSize: 10,
+                    listCount: 0
+                },
+                // 初始化搜索
+                searchConf: {
+                    type_id: '',
+                    name: '',
+                    status: ''
+                },
                 // 初始化编辑/新增弹出框
                 modalSetting: {
                     show: false,
                     loading: false,
                     index: 0
                 },
+                // 初始化图片弹出框
+                modalSeeingImg: {
+                    show: false
+                },
                 // 初始化表单数据
                 formItem: {
                     name: '',
-                    fid: 0,
                     img: '',
                     describe: '',
                     sort: 0,
@@ -219,8 +259,6 @@
                         { required: true, message: '请上传商品封面', trigger: 'change' }
                     ]
                 },
-                // 商品一级类型
-                typeList: [],
                 // 编辑/添加弹窗中显示大图
                 visible: false,
                 // 上传地址
@@ -330,14 +368,6 @@
                 });
                 this.uploadUrl = config.baseUrl + 'Index/upload';
                 this.uploadHeader = {'ApiAuth': sessionStorage.getItem('apiAuth')};
-                this.getGoodsType();
-            },
-            // 获取商品一级类型数据
-            getGoodsType () {
-                let self = this;
-                axios.get('Common/firstGoodsTypeList').then(function (response) {
-                    self.typeList = response.data.data.list;
-                });
             },
             // 新增数据弹出框
             alertAdd () {
@@ -375,11 +405,33 @@
                     this.modalSetting.index = 0;
                 }
             },
+            // 改变当前页
+            changePage (page) {
+                this.tableShow.currentPage = page;
+                this.getList();
+            },
+            // 改变分页数据条数
+            changeSize (size) {
+                this.tableShow.pageSize = size;
+                this.getList();
+            },
+            // 搜索
+            search () {
+                this.tableShow.currentPage = 1;
+                this.getList();
+            },
             // 获取列表数据
             getList () {
                 let vm = this;
                 vm.tableLoading = true;
-                axios.get('GoodsTypeCon/index').then(function (response) {
+                axios.get('GoodsTypeCon/index', {
+                    params: {
+                        page: vm.tableShow.currentPage,
+                        size: vm.tableShow.pageSize,
+                        name: vm.searchConf.name,
+                        status: vm.searchConf.status
+                    }
+                }).then(function (response) {
                     let res = response.data;
                     vm.tableLoading = false;
                     if (res.code === 1) {
