@@ -594,11 +594,12 @@
             getGoodsType () {
                 let self = this;
                 axios.get('Common/goodsTypeList').then(function (response) {
-                    self.typeList = response.data.data.list;
+                    self.typeList = response.data.data;
                 });
             },
             // 新增数据弹出框
             alertAdd () {
+                this.getGoodsType();
                 this.modalSetting.show = true;
             },
             // 删除数据弹出框
