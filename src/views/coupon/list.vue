@@ -45,15 +45,24 @@
         <Modal v-model="modalSetting.show" width="668" :styles="{top: '30px'}" @on-visible-change="doCancel">
             <p slot="header" style="color:#2d8cf0;">
                 <Icon type="md-information-circle"></Icon>
-                <span>{{formItem.id ? '编辑' : '新增'}}物流公司</span>
+                <span>{{formItem.id ? '编辑' : '新增'}}优惠券</span>
             </p>
-            <Form ref="myForm" :rules="ruleValidate" :model="formItem" :label-width="80">
-                <FormItem label="公司名称" prop="name">
-                    <Input v-model="formItem.name" placeholder="请输入物流公司名称"></Input>
+            <Form ref="myForm" :rules="ruleValidate" :model="formItem" :label-width="100">
+                <FormItem label="优惠券名称" prop="name">
+                    <Input v-model="formItem.name" placeholder="请输入优惠券名称"></Input>
                 </FormItem>
-                <FormItem label="排序" prop="sort">
-                    <InputNumber :min="0" v-model="formItem.sort"></InputNumber>
-                    <Tag color="error" style="margin-left:5px">数字越小越靠前</Tag>
+                <FormItem label="满价格" prop="full_money">
+                    <Input v-model="formItem.full_money" placeholder="请输入满价格"></Input>
+                </FormItem>
+                <FormItem label="减价格" prop="reduce_money">
+                    <Input v-model="formItem.reduce_money" placeholder="请输入减价格"></Input>
+                </FormItem>
+                <FormItem label="优惠券描述" prop="describe">
+                    <Input v-model="formItem.describe" :autosize="{maxRows: 10, minRows: 4}" type="textarea" placeholder="请输入优惠券描述"></Input>
+                </FormItem>
+                <FormItem label="期限天数" prop="term">
+                    <InputNumber :min="0" v-model="formItem.term"></InputNumber>
+                    <Tag color="error" style="margin-left:5px">优惠券期限天数</Tag>
                 </FormItem>
             </Form>
             <div slot="footer">
@@ -90,7 +99,10 @@
                 'click': () => {
                     vm.formItem.id = currentRow.id;
                     vm.formItem.name = currentRow.name;
-                    vm.formItem.sort = currentRow.sort;
+                    vm.formItem.full_money = currentRow.full_money;
+                    vm.formItem.reduce_money = currentRow.reduce_money;
+                    vm.formItem.describe = currentRow.describe;
+                    vm.formItem.term = currentRow.term;
                     vm.modalSetting.show = true;
                     vm.modalSetting.index = index;
                 }
@@ -108,7 +120,7 @@
             },
             on: {
                 'on-ok': () => {
-                    axios.get('LogisticsCompanyCon/del', {
+                    axios.get('CouponCon/del', {
                         params: {
                             id: currentRow.id
                         }
@@ -138,8 +150,19 @@
     };
 
     export default {
-        name: 'logistics_company_list',
+        name: 'coupon_list',
         data () {
+            // 表单价格验证
+            const validateMoney = function (rule, value, callback) {
+                let moneyTest = /^(([1-9]\d{0,3})|0)(\.\d{0,2})?$/;
+                if (value === '') {
+                    return callback(new Error('请输入价格'));
+                } else if (!moneyTest.test(value)) {
+                    return callback(new Error('请正确输入价格(0~9999.99)'));
+                } else {
+                    callback();
+                }
+            };
             return {
                 // 初始化表格
                 columnsList: [
@@ -156,14 +179,29 @@
                         align: 'center'
                     },
                     {
-                        title: '物流公司名称',
+                        title: '优惠券名称',
                         align: 'left',
                         key: 'name'
                     },
                     {
-                        title: '排序',
+                        title: '优惠券描述',
+                        align: 'left',
+                        key: 'describe'
+                    },
+                    {
+                        title: '满价格',
                         align: 'center',
-                        key: 'sort',
+                        key: 'full_money'
+                    },
+                    {
+                        title: '减价格',
+                        align: 'center',
+                        key: 'reduce_money'
+                    },
+                    {
+                        title: '期限天数',
+                        align: 'center',
+                        key: 'term',
                         width: 100
                     },
                     {
@@ -210,13 +248,27 @@
                 // 初始化表单数据
                 formItem: {
                     name: '',
-                    sort: 0,
+                    full_money: '',
+                    reduce_money: '',
+                    describe: '',
+                    term: 7,
                     id: 0
                 },
                 // 表单验证规则
                 ruleValidate: {
                     name: [
-                        { required: true, message: '商品名称不能为空', trigger: 'blur' }
+                        { required: true, message: '优惠券名称不能为空', trigger: 'blur' }
+                    ],
+                    full_money: [
+                        { required: true, message: '满价格不能为空', trigger: 'blur' },
+                        { validator: validateMoney, trigger: 'blur' }
+                    ],
+                    reduce_money: [
+                        { required: true, message: '减价格不能为空', trigger: 'blur' },
+                        { validator: validateMoney, trigger: 'blur' }
+                    ],
+                    term: [
+                        { required: true, message: '期限天数不能为空', trigger: 'blur', type: 'number' }
                     ]
                 },
                 // 选中id列表
@@ -259,7 +311,7 @@
                                 },
                                 on: {
                                     'on-change': function (status) {
-                                        axios.get('LogisticsCompanyCon/changeStatus', {
+                                        axios.get('CouponCon/changeStatus', {
                                             params: {
                                                 status: status,
                                                 id: currentRowData.id
@@ -309,7 +361,7 @@
                 this.$refs['myForm'].validate((valid) => {
                     if (valid) {
                         self.modalSetting.loading = true;
-                        let target = 'LogisticsCompanyCon/aoe';
+                        let target = 'CouponCon/aoe';
                         axios.post(target, this.formItem).then(function (response) {
                             if (response.data.code === 1) {
                                 self.$Message.success(response.data.msg);
@@ -358,7 +410,7 @@
             getList () {
                 let vm = this;
                 vm.tableLoading = true;
-                axios.get('LogisticsCompanyCon/index', {
+                axios.get('CouponCon/index', {
                     params: {
                         page: vm.tableShow.currentPage,
                         size: vm.tableShow.pageSize,
@@ -398,7 +450,7 @@
                     vm.$Message.error('请选择要删除的数据');
                     vm.cancel();
                 } else {
-                    axios.get('LogisticsCompanyCon/del', {
+                    axios.get('CouponCon/del', {
                         params: {
                             id: vm.idList
                         }

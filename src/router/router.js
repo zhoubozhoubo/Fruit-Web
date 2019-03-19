@@ -80,6 +80,12 @@ export const otherRouter = {
             name: 'user_address',
             component: () => import('@/views/user/address.vue')
         },
+        {
+            path: 'coupon/:id/:name',
+            title: '优惠券',
+            name: 'user_coupon',
+            component: () => import('@/views/user/coupon.vue')
+        },
     ]
 };
 
@@ -231,8 +237,59 @@ export const appRouter = [
                 icon: "ios-document-outline",
                 name: "orders_list",
                 access: 'admin/OrdersCon/index',
-                title: "订单管理",
+                title: "订单列表",
                 component: () => import('@/views/orders/list.vue')
+            }
+        ]
+    },
+    {
+        path: "/logistics_company",
+        icon: "md-cube",
+        name: "logistics_company",
+        title: "物流公司管理",
+        component: Main,
+        children: [
+            {
+                path: "list",
+                icon: "ios-folder-open",
+                name: "logistics_company_list",
+                access: 'admin/LogisticsCompanyCon/index',
+                title: "物流公司列表",
+                component: () => import('@/views/logistics_company/list.vue')
+            }
+        ]
+    },
+    {
+        path: "/coupon",
+        icon: "md-cube",
+        name: "coupon",
+        title: "优惠券管理",
+        component: Main,
+        children: [
+            {
+                path: "list",
+                icon: "ios-folder-open",
+                name: "coupon_list",
+                access: 'admin/CouponCon/index',
+                title: "优惠券列表",
+                component: () => import('@/views/coupon/list.vue')
+            }
+        ]
+    },
+    {
+        path: "/basic_config",
+        icon: "md-cube",
+        name: "basic_config",
+        title: "基本配置",
+        component: Main,
+        children: [
+            {
+                path: "index",
+                icon: "ios-folder-open",
+                name: "basic_config_index",
+                access: 'admin/BasicConfigCon/index',
+                title: "基本配置",
+                component: () => import('@/views/basic_config/index.vue')
             }
         ]
     },
