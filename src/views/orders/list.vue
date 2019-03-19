@@ -64,11 +64,13 @@
                 <span>发货</span>
             </p>
             <Form ref="myForm" :rules="ruleValidate" :model="formItem" :label-width="80">
-                <FormItem label="物流公司" prop="courier_company">
-                    <Input v-model="formItem.courier_company" placeholder="请输入物流公司"></Input>
+                <FormItem label="物流公司" prop="logistics_company_id">
+                    <Select v-model="formItem.logistics_company_id">
+                        <Option v-for="(logisticsCompany, logisticsCompanyIndex) in logisticsCompanyList" :value="logisticsCompany.id" :key="logisticsCompanyIndex">{{logisticsCompany.name}}</Option>
+                    </Select>
                 </FormItem>
-                <FormItem label="物流单号" prop="courier_number">
-                    <Input v-model="formItem.courier_number" placeholder="请输入物流单号"></Input>
+                <FormItem label="物流单号" prop="logistics_number">
+                    <Input v-model="formItem.logistics_number" placeholder="请输入物流单号"></Input>
                 </FormItem>
             </Form>
             <div slot="footer">
@@ -108,6 +110,7 @@
             },
             on: {
                 'click': () => {
+                    vm.getLogisticsCompany();
                     vm.formItem.id = currentRow.id;
                     vm.modalSetting.show = true;
                     vm.modalSetting.index = index;
@@ -229,13 +232,13 @@
                     {
                         title: '物流公司',
                         align: 'center',
-                        key: 'courier_company',
+                        key: 'logistics_company_name',
                         width: 120
                     },
                     {
                         title: '物流单号',
                         align: 'center',
-                        key: 'courier_number',
+                        key: 'logistics_number',
                         width: 120
                     },
                     {
@@ -361,20 +364,22 @@
                 },
                 // 初始化表单数据
                 formItem: {
-                    courier_company: '',
-                    courier_number: '',
+                    logistics_company_id: '',
+                    logistics_number: '',
                     status: 3,
                     id: 0
                 },
                 // 表单验证规则
                 ruleValidate: {
-                    courier_company: [
-                        { required: true, message: '请输入物流公司', trigger: 'blur' }
+                    logistics_company_id: [
+                        { required: true, message: '请选择物流公司', trigger: 'change', type: 'number' }
                     ],
-                    courier_number: [
+                    logistics_number: [
                         { required: true, message: '请输入物流单号', trigger: 'blur' }
                     ]
-                }
+                },
+                // 物流公司列表
+                logisticsCompanyList: []
             };
         },
         components: {
@@ -460,6 +465,7 @@
                         };
                     }
                 });
+                this.getLogisticsCompany();
             },
             // 初始化页面
             goodsinit () {
@@ -495,6 +501,13 @@
                             }
                         };
                     }
+                });
+            },
+            // 获取物流公司数据
+            getLogisticsCompany () {
+                let self = this;
+                axios.get('Common/logisticsCompanyList').then(function (response) {
+                    self.logisticsCompanyList = response.data.data;
                 });
             },
             // 表单提交

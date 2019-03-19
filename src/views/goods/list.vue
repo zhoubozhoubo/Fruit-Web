@@ -88,6 +88,9 @@
                         <img :src="formItem.img" v-if="visible" style="width: 100%">
                     </Modal>
                 </FormItem>
+                <FormItem label="商品简介" prop="describe">
+                    <Input v-model="formItem.describe" :autosize="{maxRows: 5, minRows: 2}" type="textarea" placeholder="请输入商品简介"></Input>
+                </FormItem>
                 <FormItem label="商品价格" prop="money">
                     <Input v-model="formItem.money" placeholder="请输入商品价格"></Input>
                 </FormItem>
@@ -164,6 +167,7 @@
                     vm.formItem.type_id = currentRow.type_id;
                     vm.formItem.img = currentRow.img;
                     vm.formItem.name = currentRow.name;
+                    vm.formItem.describe = currentRow.describe;
                     vm.formItem.money = currentRow.money;
                     vm.formItem.original_money = currentRow.original_money;
                     vm.formItem.other_money = currentRow.other_money;
@@ -271,13 +275,19 @@
                     },
                     {
                         title: '商品名称',
-                        align: 'center',
+                        align: 'left',
                         key: 'name'
+                    },
+                    {
+                        title: '商品简介',
+                        align: 'left',
+                        key: 'describe'
                     },
                     {
                         title: '商品类型',
                         align: 'center',
-                        key: 'type_name'
+                        key: 'type_name',
+                        width: 120
                     },
                     {
                         title: '商品价格',
@@ -369,6 +379,7 @@
                 formItem: {
                     type_id: '',
                     name: '',
+                    describe: '',
                     img: '',
                     money: '',
                     original_money: '',
@@ -383,6 +394,9 @@
                     ],
                     name: [
                         { required: true, message: '商品名称不能为空', trigger: 'blur' }
+                    ],
+                    describe: [
+                        { required: true, message: '商品简介不能为空', trigger: 'blur' }
                     ],
                     money: [
                         { required: true, message: '商品价格不能为空', trigger: 'blur' },
@@ -594,11 +608,12 @@
             getGoodsType () {
                 let self = this;
                 axios.get('Common/goodsTypeList').then(function (response) {
-                    self.typeList = response.data.data.list;
+                    self.typeList = response.data.data;
                 });
             },
             // 新增数据弹出框
             alertAdd () {
+                this.getGoodsType();
                 this.modalSetting.show = true;
             },
             // 删除数据弹出框

@@ -201,10 +201,12 @@
         },
         created () {
             this.init();
+            console.log('created');
         },
         activated () {
             this.hash = this.$route.params.hash.toString();
             this.getList();
+            console.log('activated');
         },
         methods: {
             init () {

@@ -127,7 +127,7 @@
                 type: 'success'
             },
             style: {
-                margin: '5px 0 0'
+                margin: '5px 5px 0'
             },
             on: {
                 'click': () => {
@@ -140,7 +140,32 @@
                     });
                 }
             }
-        }, '收货地址');
+        }, '地址');
+    };
+
+    // 优惠券
+    const couponButton = (vm, h, currentRow, index) => {
+        return h('Button', {
+            props: {
+                type: 'info'
+            },
+            style: {
+                margin: '5px 5px 0'
+            },
+            on: {
+                click: () => {
+                    let id = currentRow.id;
+                    let name = currentRow.name;
+                    vm.$router.push({
+                        name: 'user_coupon',
+                        params: {
+                            id: id,
+                            name: name
+                        }
+                    });
+                }
+            }
+        }, '优惠');
     };
 
     // 编辑
@@ -280,8 +305,8 @@
                         title: '操作',
                         align: 'center',
                         key: 'handle',
-                        width: 175,
-                        handle: ['edit', 'delete']
+                        width: 200,
+                        handle: ['address', 'coupon', 'edit', 'delete']
                     }
                 ],
                 // 表格加载状态
@@ -374,6 +399,7 @@
                             let currentRowData = vm.tableData[param.index];
                             return h('div', [
                                 addressButton(vm, h, currentRowData, param.index),
+                                couponButton(vm, h, currentRowData, param.index),
                                 editButton(vm, h, currentRowData, param.index),
                                 deleteButton(vm, h, currentRowData, param.index)
                             ]);

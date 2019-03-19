@@ -302,9 +302,11 @@
         components: {
         },
         created () {
+            this.init();
+        },
+        activated () {
             this.user.id = this.$route.params.id.toString();
             this.user.name = this.$route.params.name.toString();
-            this.init();
             this.getList();
         },
         methods: {
