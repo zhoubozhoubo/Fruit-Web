@@ -179,15 +179,11 @@
         },
         created () {
             this.init();
-            console.log('created');
-            console.log(this.user);
         },
         activated () {
             this.user.id = this.$route.params.id.toString();
             this.user.name = this.$route.params.name.toString();
             this.getList();
-            console.log('activated');
-            console.log(this.user);
         },
         methods: {
             // 返回上一页

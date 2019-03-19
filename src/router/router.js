@@ -276,6 +276,23 @@ export const appRouter = [
             }
         ]
     },
+    {
+        path: "/basic_config",
+        icon: "md-cube",
+        name: "basic_config",
+        title: "基本配置",
+        component: Main,
+        children: [
+            {
+                path: "index",
+                icon: "ios-folder-open",
+                name: "basic_config_index",
+                access: 'admin/BasicConfigCon/index',
+                title: "基本配置",
+                component: () => import('@/views/basic_config/index.vue')
+            }
+        ]
+    },
     // {
     //     path: '/international',
     //     icon: 'earth',
