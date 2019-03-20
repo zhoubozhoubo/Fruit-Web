@@ -293,6 +293,23 @@ export const appRouter = [
             }
         ]
     },
+    {
+        path: "/banner",
+        icon: "md-cube",
+        name: "banner",
+        title: "banner管理",
+        component: Main,
+        children: [
+            {
+                path: "list",
+                icon: "ios-folder-open",
+                name: "banner_list",
+                access: 'admin/BannerCon/index',
+                title: "banner列表",
+                component: () => import('@/views/banner/list.vue')
+            }
+        ]
+    },
     // {
     //     path: '/international',
     //     icon: 'earth',
