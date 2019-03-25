@@ -45,45 +45,14 @@
         <Modal v-model="modalSetting.show" width="668" :styles="{top: '30px'}" @on-visible-change="doCancel">
             <p slot="header" style="color:#2d8cf0;">
                 <Icon type="md-information-circle"></Icon>
-                <span>{{formItem.id ? '编辑' : '新增'}}类型</span>
+                <span>{{formItem.id ? '编辑' : '新增'}}优惠券类型</span>
             </p>
             <Form ref="myForm" :rules="ruleValidate" :model="formItem" :label-width="80">
                 <FormItem label="类型名称" prop="name">
                     <Input v-model="formItem.name" placeholder="请输入类型名称"></Input>
                 </FormItem>
-                <FormItem label="类型封面" prop="img">
-                    <div class="demo-upload-list" v-if="formItem.img">
-                        <img :src="formItem.img">
-                        <div class="demo-upload-list-cover">
-                            <Icon type="ios-eye-outline" @click.native="handleView()"></Icon>
-                            <Icon type="ios-trash-outline" @click.native="handleImgRemove()"></Icon>
-                        </div>
-                    </div>
-                    <input v-if="formItem.img" v-model="formItem.img" type="hidden" name="image">
-                    <Upload type="drag"
-                            :action="uploadUrl"
-                            :headers="uploadHeader"
-                            v-if="!formItem.img"
-                            :format="['jpg','jpeg','png']"
-                            :max-size="5120"
-                            :on-success="handleImgSuccess"
-                            :on-format-error="handleImgFormatError"
-                            :on-exceeded-size="handleImgMaxSize"
-                            style="display: inline-block;width:58px;">
-                        <div style="width: 58px;height:58px;line-height: 58px;">
-                            <Icon type="ios-camera" size="20"></Icon>
-                        </div>
-                    </Upload>
-                    <Modal title="View Image" v-model="visible">
-                        <img :src="formItem.img" v-if="visible" style="width: 100%">
-                    </Modal>
-                </FormItem>
                 <FormItem label="类型描述" prop="describe">
                     <Input v-model="formItem.describe" :autosize="{maxRows: 10, minRows: 4}" type="textarea" placeholder="请输入类型描述"></Input>
-                </FormItem>
-                <FormItem label="类型排序" prop="sort">
-                    <InputNumber :min="0" v-model="formItem.sort"></InputNumber>
-                    <Tag color="error" style="margin-left:5px">数字越小越靠前</Tag>
                 </FormItem>
             </Form>
             <div slot="footer">
@@ -91,19 +60,11 @@
                 <Button type="primary" @click="submit" :loading="modalSetting.loading">确定</Button>
             </div>
         </Modal>
-        <!--查看大图-->
-        <Modal :title="formItem.name"
-               v-model="modalSeeingImg.show"
-               class-name="fl-image-modal"
-               @on-visible-change="doCancel">
-            <img :src="formItem.img" v-if="modalSeeingImg.show" style="width: 100%">
-        </Modal>
     </div>
 </template>
 
 <script>
     import axios from 'axios';
-    import config from '../../../build/config';
 
     // 编辑
     const editButton = (vm, h, currentRow, index) => {
@@ -118,9 +79,7 @@
                 'click': () => {
                     vm.formItem.id = currentRow.id;
                     vm.formItem.name = currentRow.name;
-                    vm.formItem.img = currentRow.img;
                     vm.formItem.describe = currentRow.describe;
-                    vm.formItem.sort = currentRow.sort;
                     vm.modalSetting.show = true;
                     vm.modalSetting.index = index;
                 }
@@ -138,7 +97,7 @@
             },
             on: {
                 'on-ok': () => {
-                    axios.get('GoodsTypeCon/del', {
+                    axios.get('CouponTypeCon/del', {
                         params: {
                             id: currentRow.id
                         }
@@ -168,7 +127,7 @@
     };
 
     export default {
-        name: 'goods_type',
+        name: 'coupon_type',
         data () {
             return {
                 // 初始化表格
@@ -186,21 +145,9 @@
                         width: 200
                     },
                     {
-                        title: '类型封面',
-                        align: 'center',
-                        key: 'img',
-                        width: 200
-                    },
-                    {
                         title: '类型描述',
                         align: 'left',
                         key: 'describe'
-                    },
-                    {
-                        title: '排序',
-                        align: 'center',
-                        key: 'sort',
-                        width: 80
                     },
                     {
                         title: '状态',
@@ -237,33 +184,18 @@
                     loading: false,
                     index: 0
                 },
-                // 初始化图片弹出框
-                modalSeeingImg: {
-                    show: false
-                },
                 // 初始化表单数据
                 formItem: {
                     name: '',
-                    img: '',
                     describe: '',
-                    sort: 0,
                     id: 0
                 },
                 // 表单验证规则
                 ruleValidate: {
                     name: [
                         { required: true, message: '类型名称不能为空', trigger: 'blur' }
-                    ],
-                    img: [
-                        { required: true, message: '请上传商品封面', trigger: 'change' }
                     ]
-                },
-                // 编辑/添加弹窗中显示大图
-                visible: false,
-                // 上传地址
-                uploadUrl: '',
-                // 上传头部信息
-                uploadHeader: {}
+                }
             };
         },
         created () {
@@ -285,36 +217,6 @@
                             ]);
                         };
                     }
-                    // 图片列
-                    if (item.key === 'img') {
-                        item.render = (h, param) => {
-                            let currentRowData = vm.tableData[param.index];
-                            if (currentRowData.img) {
-                                return h('img', {
-                                    style: {
-                                        width: '40px',
-                                        height: '40px',
-                                        cursor: 'pointer',
-                                        'margin-top': '5px'
-                                    },
-                                    attrs: {
-                                        src: currentRowData.img,
-                                        shape: 'square',
-                                        size: 'large'
-                                    },
-                                    on: {
-                                        click: (e) => {
-                                            this.formItem.img = currentRowData.img;
-                                            this.formItem.name = currentRowData.name;
-                                            vm.modalSeeingImg.show = true;
-                                        }
-                                    }
-                                });
-                            } else {
-                                return h('Tag', {}, '暂无图片');
-                            }
-                        };
-                    }
                     // 状态列
                     if (item.key === 'status') {
                         item.render = (h, param) => {
@@ -330,7 +232,7 @@
                                 },
                                 on: {
                                     'on-change' : function (status) {
-                                        axios.get('GoodsTypeCon/changeStatus', {
+                                        axios.get('CouponTypeCon/changeStatus', {
                                             params: {
                                                 status: status,
                                                 id: currentRowData.id
@@ -365,8 +267,6 @@
                         };
                     }
                 });
-                this.uploadUrl = config.baseUrl + 'Index/upload';
-                this.uploadHeader = {'ApiAuth': sessionStorage.getItem('apiAuth')};
             },
             // 新增数据弹出框
             alertAdd () {
@@ -378,7 +278,7 @@
                 this.$refs['myForm'].validate((valid) => {
                     if (valid) {
                         self.modalSetting.loading = true;
-                        let target = 'GoodsTypeCon/aoe';
+                        let target = 'CouponTypeCon/aoe';
                         axios.post(target, this.formItem).then(function (response) {
                             if (response.data.code === 1) {
                                 self.$Message.success(response.data.msg);
@@ -423,7 +323,7 @@
             getList () {
                 let vm = this;
                 vm.tableLoading = true;
-                axios.get('GoodsTypeCon/index', {
+                axios.get('CouponTypeCon/index', {
                     params: {
                         page: vm.tableShow.currentPage,
                         size: vm.tableShow.pageSize,
@@ -446,33 +346,6 @@
                         }
                     }
                 });
-            },
-            // 上传图片一系列
-            handleView () {
-                this.visible = true;
-            },
-            handleImgRemove () {
-                this.formItem.img = '';
-            },
-            handleImgFormatError (file) {
-                this.$Notice.warning({
-                    title: '文件类型不合法',
-                    desc: file.name + '的文件类型不正确，请上传jpg或者png图片。'
-                });
-            },
-            handleImgMaxSize (file) {
-                this.$Notice.warning({
-                    title: '文件大小不合法',
-                    desc: file.name + '太大啦请上传小于5M的文件。'
-                });
-            },
-            handleImgSuccess (response) {
-                if (response.code === 1) {
-                    this.$Message.success(response.msg);
-                    this.formItem.img = response.data.fileUrl;
-                } else {
-                    this.$Message.error(response.msg);
-                }
             }
         }
     };

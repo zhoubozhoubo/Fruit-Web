@@ -267,6 +267,14 @@ export const appRouter = [
         component: Main,
         children: [
             {
+                path: "type",
+                icon: "ios-folder-open",
+                name: "coupon_type",
+                access: 'admin/CouponTypeCon/index',
+                title: "优惠券类型",
+                component: () => import('@/views/coupon/type.vue')
+            },
+            {
                 path: "list",
                 icon: "ios-folder-open",
                 name: "coupon_list",

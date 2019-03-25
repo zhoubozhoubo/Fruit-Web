@@ -8,6 +8,11 @@
                 <Card style="margin-bottom: 10px">
                     <Form inline>
                         <FormItem style="margin-bottom: 0">
+                            <Select v-model="searchConf.type_id" clearable placeholder="请选择类型" style="width:100px">
+                                <Option v-for="(type, typeIndex) in typeList" :value="type.id" :key="typeIndex">{{type.name}}</Option>
+                            </Select>
+                        </FormItem>
+                        <FormItem style="margin-bottom: 0">
                             <Input v-model="searchConf.name" clearable placeholder="请输入名称"></Input>
                         </FormItem>
                         <FormItem style="margin-bottom: 0">
@@ -48,6 +53,11 @@
                 <span>{{formItem.id ? '编辑' : '新增'}}优惠券</span>
             </p>
             <Form ref="myForm" :rules="ruleValidate" :model="formItem" :label-width="100">
+                <FormItem label="优惠券类型" prop="type_id">
+                    <Select v-model="formItem.type_id">
+                        <Option v-for="(type, typeIndex) in typeList" :value="type.id" :key="typeIndex">{{type.name}}</Option>
+                    </Select>
+                </FormItem>
                 <FormItem label="优惠券名称" prop="name">
                     <Input v-model="formItem.name" placeholder="请输入优惠券名称"></Input>
                 </FormItem>
@@ -98,6 +108,7 @@
             on: {
                 'click': () => {
                     vm.formItem.id = currentRow.id;
+                    vm.formItem.type_id = currentRow.type_id;
                     vm.formItem.name = currentRow.name;
                     vm.formItem.full_money = currentRow.full_money;
                     vm.formItem.reduce_money = currentRow.reduce_money;
@@ -189,6 +200,12 @@
                         key: 'describe'
                     },
                     {
+                        title: '优惠券类型',
+                        align: 'center',
+                        key: 'type_name',
+                        width: 120
+                    },
+                    {
                         title: '满价格',
                         align: 'center',
                         key: 'full_money'
@@ -230,6 +247,7 @@
                 },
                 // 初始化搜索
                 searchConf: {
+                    type_id: '',
                     name: '',
                     status: ''
                 },
@@ -247,6 +265,7 @@
                 },
                 // 初始化表单数据
                 formItem: {
+                    type_id: '',
                     name: '',
                     full_money: '',
                     reduce_money: '',
@@ -271,6 +290,8 @@
                         { required: true, message: '期限天数不能为空', trigger: 'blur', type: 'number' }
                     ]
                 },
+                // 优惠券类型
+                typeList: [],
                 // 选中id列表
                 idList: ''
             };
@@ -346,6 +367,14 @@
                         };
                     }
                 });
+                this.getCouponType();
+            },
+            // 获取优惠券类型数据
+            getCouponType () {
+                let self = this;
+                axios.get('Common/couponTypeList').then(function (response) {
+                    self.typeList = response.data.data;
+                });
             },
             // 新增数据弹出框
             alertAdd () {
@@ -414,6 +443,7 @@
                     params: {
                         page: vm.tableShow.currentPage,
                         size: vm.tableShow.pageSize,
+                        type_id: vm.searchConf.type_id,
                         name: vm.searchConf.name,
                         status: vm.searchConf.status
                     }
