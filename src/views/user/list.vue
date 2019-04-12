@@ -28,7 +28,7 @@
                 <Card>
                     <p slot="title" style="height: 32px">
                         <!--<Button type="primary" @click="alertAdd" icon="md-add">新增</Button>-->
-                        <Button type="error" @click="alertDel" icon="md-close" style="float: right">删除</Button>
+                        <!--<Button type="error" @click="alertDel" icon="md-close" style="float: right">删除</Button>-->
                     </p>
                     <div>
                         <Table highlight-row :loading="tableLoading" :columns="columnsList" :data="tableData" border disabled-hover  @on-selection-change="handleRowChange" ref="selection"></Table>
@@ -45,7 +45,7 @@
         <Modal v-model="modalSeeingAddress.show" width="998" :styles="{top: '30px'}">
             <p slot="header" style="color:#2d8cf0;">
                 <Icon type="md-information-circle"></Icon>
-                <span>收货地址列表</span>
+                <span>{{modalSeeingAddress.name}} > 收货地址列表</span>
             </p>
             <div>
                 <Table :loading="addressLoading" :columns="addressColumns" :data="addressData" border disabled-hover></Table>
@@ -61,7 +61,7 @@
         <Modal v-model="modalSeeingCoupon.show" width="998" :styles="{top: '30px'}">
             <p slot="header" style="color:#2d8cf0;">
                 <Icon type="md-information-circle"></Icon>
-                <span>收货地址列表</span>
+                <span>{{modalSeeingCoupon.name}} > 优惠券列表</span>
             </p>
             <div>
                 <Table :loading="couponLoading" :columns="couponColumns" :data="couponData" border disabled-hover></Table>
@@ -152,29 +152,6 @@
     import axios from 'axios';
     import config from '../../../build/config';
 
-    /*// 收货地址
-    const addressButton = (vm, h, currentRow, index) => {
-        return h('Button', {
-            props: {
-                type: 'success'
-            },
-            style: {
-                margin: '5px 0'
-            },
-            on: {
-                'click': () => {
-                    vm.$router.push({
-                        name: 'user_address',
-                        params: {
-                            id: currentRow.id,
-                            name: currentRow.name
-                        }
-                    });
-                }
-            }
-        }, '收货地址');
-    };*/
-
     // 收货地址
     const addressButton = (vm, h, currentRow, index) => {
         return h('Button', {
@@ -187,6 +164,7 @@
             on: {
                 'click': () => {
                     vm.modalSeeingAddress.show = true;
+                    vm.modalSeeingAddress.name = currentRow.name;
                     vm.addressShow.user_id = currentRow.id;
                     vm.getAddressList();
                 }
@@ -198,7 +176,7 @@
     const couponButton = (vm, h, currentRow, index) => {
         return h('Button', {
             props: {
-                type: 'primary'
+                type: 'success'
             },
             style: {
                 margin: '0 5px'
@@ -206,37 +184,13 @@
             on: {
                 'click': () => {
                     vm.modalSeeingCoupon.show = true;
+                    vm.modalSeeingCoupon.name = currentRow.name;
                     vm.couponShow.user_id = currentRow.id;
                     vm.getCouponList();
                 }
             }
         }, '优惠券');
     };
-
-    /*// 优惠券
-    const couponButton = (vm, h, currentRow, index) => {
-        return h('Button', {
-            props: {
-                type: 'info'
-            },
-            style: {
-                margin: '5px 0'
-            },
-            on: {
-                click: () => {
-                    let id = currentRow.id;
-                    let name = currentRow.name;
-                    vm.$router.push({
-                        name: 'user_coupon',
-                        params: {
-                            id: id,
-                            name: name
-                        }
-                    });
-                }
-            }
-        }, '优惠券');
-    };*/
 
     // 编辑
     const editButton = (vm, h, currentRow, index) => {
@@ -340,7 +294,13 @@
                         align: 'center'
                     },
                     {
-                        title: '用户头像',
+                        title: '微信昵称',
+                        align: 'center',
+                        key: 'nickname',
+                        width: 200
+                    },
+                    {
+                        title: '微信头像',
                         align: 'center',
                         key: 'avatarurl',
                         width: 120
@@ -348,22 +308,25 @@
                     {
                         title: '用户姓名',
                         align: 'center',
-                        key: 'name'
-                    },
-                    {
-                        title: '用户昵称',
-                        align: 'center',
-                        key: 'nickname'
+                        key: 'name',
+                        width: 150
                     },
                     {
                         title: '用户电话',
                         align: 'center',
-                        key: 'phone'
+                        key: 'phone',
+                        width: 120
                     },
                     {
                         title: '用户地址',
                         align: 'center',
                         key: 'area_com'
+                    },
+                    {
+                        title: '注册时间',
+                        align: 'center',
+                        key: 'gmt_create',
+                        width: 150
                     },
                     {
                         title: '收货地址',
@@ -376,20 +339,20 @@
                         align: 'center',
                         key: 'coupon',
                         width: 110
-                    },
-                    {
-                        title: '状态',
-                        align: 'center',
-                        key: 'status',
-                        width: 100
-                    },
-                    {
-                        title: '操作',
-                        align: 'center',
-                        key: 'handle',
-                        width: 175,
-                        handle: ['edit', 'delete']
                     }
+                    // {
+                    //     title: '状态',
+                    //     align: 'center',
+                    //     key: 'status',
+                    //     width: 100
+                    // },
+                    // {
+                    //     title: '操作',
+                    //     align: 'center',
+                    //     key: 'handle',
+                    //     width: 175,
+                    //     handle: ['edit', 'delete']
+                    // }
                 ],
                 // 初始化收货地址列表
                 addressColumns: [
@@ -517,12 +480,14 @@
                 // 收货地址弹出框
                 modalSeeingAddress: {
                     show: false,
+                    name: '',
                     loading: false,
                     index: 0
                 },
                 // 优惠券弹出框
                 modalSeeingCoupon: {
                     show: false,
+                    name: '',
                     loading: false,
                     index: 0
                 },
@@ -618,8 +583,8 @@
                                     },
                                     on: {
                                         click: (e) => {
-                                            this.formItem.avatarurl = currentRowData.avatarurl;
-                                            this.formItem.name = currentRowData.name;
+                                            vm.formItem.avatarurl = currentRowData.avatarurl;
+                                            vm.formItem.name = currentRowData.name;
                                             vm.modalSeeingImg.show = true;
                                         }
                                     }
@@ -629,15 +594,6 @@
                             }
                         };
                     }
-                    /*// 地址列
-                    if (item.key === 'address') {
-                        item.render = (h, param) => {
-                            let currentRowData = vm.tableData[param.index];
-                            return h('div', [
-                                addressButton(vm, h, currentRowData, param.index)
-                            ]);
-                        };
-                    }*/
                     // 收货地址列
                     if (item.key === 'address') {
                         item.render = (h, param) => {
@@ -656,15 +612,6 @@
                             ]);
                         };
                     }
-                    /*// 优惠券列
-                    if (item.key === 'coupon') {
-                        item.render = (h, param) => {
-                            let currentRowData = vm.tableData[param.index];
-                            return h('div', [
-                                couponButton(vm, h, currentRowData, param.index)
-                            ]);
-                        };
-                    }*/
                     // 状态列
                     if (item.key === 'status') {
                         item.render = (h, param) => {

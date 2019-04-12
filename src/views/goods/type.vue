@@ -51,7 +51,7 @@
                 <FormItem label="类型名称" prop="name">
                     <Input v-model="formItem.name" placeholder="请输入类型名称"></Input>
                 </FormItem>
-                <FormItem label="类型封面" prop="img">
+                <FormItem label="类型图片" prop="img">
                     <div class="demo-upload-list" v-if="formItem.img">
                         <img :src="formItem.img">
                         <div class="demo-upload-list-cover">
@@ -186,7 +186,7 @@
                         width: 200
                     },
                     {
-                        title: '类型封面',
+                        title: '类型图片',
                         align: 'center',
                         key: 'img',
                         width: 200
@@ -255,7 +255,7 @@
                         { required: true, message: '类型名称不能为空', trigger: 'blur' }
                     ],
                     img: [
-                        { required: true, message: '请上传商品封面', trigger: 'change' }
+                        { required: true, message: '请上传类型图片', trigger: 'change' }
                     ]
                 },
                 // 编辑/添加弹窗中显示大图

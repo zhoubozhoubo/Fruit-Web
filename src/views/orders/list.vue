@@ -61,7 +61,7 @@
         <Modal v-model="modalSetting.show" width="668" :styles="{top: '30px'}" @on-visible-change="doCancel">
             <p slot="header" style="color:#2d8cf0;">
                 <Icon type="md-information-circle"></Icon>
-                <span>发货</span>
+                <span>{{modalSetting.number}} > 发货</span>
             </p>
             <Form ref="myForm" :rules="ruleValidate" :model="formItem" :label-width="80">
                 <FormItem label="物流公司" prop="logistics_company_id">
@@ -82,7 +82,7 @@
         <Modal v-model="modalSeeingGoods.show" width="998" :styles="{top: '30px'}">
             <p slot="header" style="color:#2d8cf0;">
                 <Icon type="md-information-circle"></Icon>
-                <span>订单商品列表</span>
+                <span>{{modalSeeingGoods.number}} > 订单商品列表</span>
             </p>
             <div>
                 <Table :loading="goodsLoading" :columns="goodsColumns" :data="goodsData" border disabled-hover></Table>
@@ -93,6 +93,13 @@
                       @on-page-size-change="changeGoodsSize" show-elevator show-sizer show-total></Page>
             </div>
             <p slot="footer"></p>
+        </Modal>
+        <!--查看大图-->
+        <Modal :title="ordersGoods.name"
+               v-model="modalSeeingImg.show"
+               class-name="fl-image-modal"
+               @on-visible-change="doCancel">
+            <img :src="ordersGoods.img" v-if="modalSeeingImg.show" style="width: 100%">
         </Modal>
     </div>
 </template>
@@ -113,6 +120,7 @@
                     vm.getLogisticsCompany();
                     vm.formItem.id = currentRow.id;
                     vm.modalSetting.show = true;
+                    vm.modalSetting.number = currentRow.number;
                     vm.modalSetting.index = index;
                 }
             }
@@ -163,7 +171,7 @@
     const goodsButton = (vm, h, currentRow, index) => {
         return h('Button', {
             props: {
-                type: 'primary'
+                type: 'info'
             },
             style: {
                 margin: '0 5px'
@@ -171,6 +179,7 @@
             on: {
                 'click': () => {
                     vm.modalSeeingGoods.show = true;
+                    vm.modalSeeingGoods.number = currentRow.number;
                     vm.goodsShow.orders_id = currentRow.id;
                     vm.getGoodsList();
                 }
@@ -199,7 +208,7 @@
                         fixed: 'left'
                     },
                     {
-                        title: '用户名',
+                        title: '用户姓名',
                         align: 'center',
                         key: 'user_name',
                         width: 120,
@@ -239,7 +248,7 @@
                         title: '物流单号',
                         align: 'center',
                         key: 'logistics_number',
-                        width: 120
+                        width: 200
                     },
                     {
                         title: '收货人',
@@ -257,25 +266,27 @@
                         title: '收货地址',
                         align: 'center',
                         key: 'orders_address',
-                        width: 150
+                        width: 200,
+                        tooltip: true
                     },
                     {
                         title: '下单时间',
                         align: 'center',
                         key: 'gmt_create',
-                        width: 100
+                        width: 150
                     },
                     {
                         title: '支付时间',
                         align: 'center',
                         key: 'pay_time',
-                        width: 100
+                        width: 150
                     },
                     {
                         title: '状态',
                         align: 'center',
                         key: 'status',
-                        width: 100
+                        width: 100,
+                        fixed: 'right'
                     },
                     {
                         title: '操作',
@@ -353,14 +364,25 @@
                 // 初始化编辑/新增弹出框
                 modalSetting: {
                     show: false,
+                    number: '',
                     loading: false,
                     index: 0
                 },
                 // 订单商品弹出框
                 modalSeeingGoods: {
                     show: false,
+                    number: '',
                     loading: false,
                     index: 0
+                },
+                // 初始化图片弹出框
+                modalSeeingImg: {
+                    show: false
+                },
+                // 初始化图片弹出框
+                ordersGoods: {
+                    name: '',
+                    img: ''
                 },
                 // 初始化表单数据
                 formItem: {
@@ -489,11 +511,11 @@
                                         size: 'large'
                                     },
                                     on: {
-                                        /*click: (e) => {
-                                            this.formItem.img = currentRowData.img;
-                                            this.formItem.name = currentRowData.name;
+                                        click: (e) => {
+                                            vm.ordersGoods.name = currentRowData.goods_name;
+                                            vm.ordersGoods.img = currentRowData.goods_img;
                                             vm.modalSeeingImg.show = true;
-                                        }*/
+                                        }
                                     }
                                 });
                             } else {

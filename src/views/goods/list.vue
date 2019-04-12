@@ -54,9 +54,10 @@
             </p>
             <Form ref="myForm" :rules="ruleValidate" :model="formItem" :label-width="80">
                 <FormItem label="商品类型" prop="type_id">
-                    <Select v-model="formItem.type_id">
+                    <Select v-model="formItem.type_id" style="width:200px">
                         <Option v-for="(type, typeIndex) in typeList" :value="type.id" :key="typeIndex">{{type.name}}</Option>
                     </Select>
+                    <Button icon="md-refresh" @click="getGoodsType"></Button>
                 </FormItem>
                 <FormItem label="商品名称" prop="name">
                     <Input v-model="formItem.name" placeholder="请输入商品名称"></Input>
@@ -447,6 +448,7 @@
         },
         created () {
             this.init();
+            this.getGoodsType();
             this.getList();
         },
         methods: {
@@ -602,7 +604,6 @@
                 });
                 this.uploadUrl = config.baseUrl + 'Index/upload';
                 this.uploadHeader = {'ApiAuth': sessionStorage.getItem('apiAuth')};
-                this.getGoodsType();
             },
             // 获取商品类型数据
             getGoodsType () {
