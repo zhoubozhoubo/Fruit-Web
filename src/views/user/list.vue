@@ -156,7 +156,7 @@
     const addressButton = (vm, h, currentRow, index) => {
         return h('Button', {
             props: {
-                type: 'primary'
+                type: 'info'
             },
             style: {
                 margin: '0 5px'

@@ -303,12 +303,6 @@
                         width: 120
                     },
                     {
-                        title: '商品运费',
-                        align: 'center',
-                        key: 'other_money',
-                        width: 120
-                    },
-                    {
                         title: '商品销量',
                         align: 'center',
                         key: 'number',
@@ -318,12 +312,6 @@
                         title: '商品详情',
                         align: 'center',
                         key: 'comment',
-                        width: 100
-                    },
-                    {
-                        title: '推荐',
-                        align: 'center',
-                        key: 'recommend',
                         width: 100
                     },
                     {
@@ -501,55 +489,6 @@
                         item.render = (h, param) => {
                             let currentRowData = vm.tableData[param.index];
                             return h('div', [seeButton(vm, h, currentRowData, param.index)]);
-                        };
-                    }
-                    // 状态列
-                    if (item.key === 'recommend') {
-                        item.render = (h, param) => {
-                            let currentRowData = vm.tableData[param.index];
-                            return h('i-switch', {
-                                attrs: {
-                                    size: 'large'
-                                },
-                                props: {
-                                    'true-value': 1,
-                                    'false-value': 0,
-                                    value: currentRowData.recommend
-                                },
-                                on: {
-                                    'on-change': function (recommend) {
-                                        axios.get('GoodsCon/changeRecommend', {
-                                            params: {
-                                                recommend: recommend,
-                                                id: currentRowData.id
-                                            }
-                                        }).then(function (response) {
-                                            let res = response.data;
-                                            if (res.code === 1) {
-                                                vm.$Message.success(res.msg);
-                                            } else {
-                                                if (res.code === -14) {
-                                                    vm.$store.commit('logout', vm);
-                                                    vm.$router.push({
-                                                        name: 'login'
-                                                    });
-                                                } else {
-                                                    vm.$Message.error(res.msg);
-                                                    vm.getList();
-                                                }
-                                            }
-                                            vm.cancel();
-                                        });
-                                    }
-                                }
-                            }, [
-                                h('span', {
-                                    slot: 'open'
-                                }, '推荐'),
-                                h('span', {
-                                    slot: 'close'
-                                }, '否')
-                            ]);
                         };
                     }
                     // 状态列
