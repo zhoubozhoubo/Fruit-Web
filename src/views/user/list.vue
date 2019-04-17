@@ -73,6 +73,22 @@
             </div>
             <p slot="footer"></p>
         </Modal>
+        <!--购物袋商品列表-->
+        <Modal v-model="modalSeeingBag.show" width="998" :styles="{top: '30px'}">
+            <p slot="header" style="color:#2d8cf0;">
+                <Icon type="md-information-circle"></Icon>
+                <span>{{modalSeeingBag.name}} > 购物袋商品列表</span>
+            </p>
+            <div>
+                <Table :loading="bagLoading" :columns="bagColumns" :data="bagData" border disabled-hover></Table>
+            </div>
+            <div class="margin-top-15" style="text-align: center">
+                <Page :total="bagShow.listCount" :current="bagShow.currentPage"
+                      :page-size="bagShow.pageSize" @on-change="changeBagPage"
+                      @on-page-size-change="changeBagSize" show-elevator show-sizer show-total></Page>
+            </div>
+            <p slot="footer"></p>
+        </Modal>
         <!--表单-->
         <Modal v-model="modalSetting.show" width="668" :styles="{top: '30px'}" @on-visible-change="doCancel">
             <p slot="header" style="color:#2d8cf0;">
@@ -190,6 +206,26 @@
                 }
             }
         }, '优惠券');
+    };
+
+    // 购物袋商品
+    const bagButton = (vm, h, currentRow, index) => {
+        return h('Button', {
+            props: {
+                type: 'success'
+            },
+            style: {
+                margin: '0 5px'
+            },
+            on: {
+                'click': () => {
+                    vm.modalSeeingBag.show = true;
+                    vm.modalSeeingBag.name = currentRow.name;
+                    vm.bagShow.user_id = currentRow.id;
+                    vm.getBagList();
+                }
+            }
+        }, '购物袋');
     };
 
     // 编辑
@@ -339,6 +375,12 @@
                         align: 'center',
                         key: 'coupon',
                         width: 110
+                    },
+                    {
+                        title: '购物袋',
+                        align: 'center',
+                        key: 'bag',
+                        width: 110
                     }
                     // {
                     //     title: '状态',
@@ -434,6 +476,35 @@
                         width: 100
                     }
                 ],
+                // 初始化购物袋列表
+                bagColumns: [
+                    {
+                        title: '序号',
+                        type: 'index',
+                        width: 65,
+                        align: 'center'
+                    },
+                    {
+                        title: '商品名称',
+                        align: 'left',
+                        key: 'goods_name'
+                    },
+                    {
+                        title: '商品图片',
+                        align: 'center',
+                        key: 'goods_img'
+                    },
+                    {
+                        title: '商品价格',
+                        align: 'center',
+                        key: 'goods_money'
+                    },
+                    {
+                        title: '商品数量',
+                        align: 'center',
+                        key: 'goods_num'
+                    }
+                ],
                 // 表格加载状态
                 tableLoading: false,
                 // 表格数据
@@ -466,6 +537,17 @@
                     listCount: 0,
                     user_id: 0
                 },
+                // 购物袋表格加载状态
+                bagLoading: false,
+                // 购物袋表格数据
+                bagData: [],
+                // 购物袋表格分页属性
+                bagShow: {
+                    currentPage: 1,
+                    pageSize: 10,
+                    listCount: 0,
+                    user_id: 0
+                },
                 // 初始化搜索
                 searchConf: {
                     name: '',
@@ -486,6 +568,13 @@
                 },
                 // 优惠券弹出框
                 modalSeeingCoupon: {
+                    show: false,
+                    name: '',
+                    loading: false,
+                    index: 0
+                },
+                // 购物袋弹出框
+                modalSeeingBag: {
                     show: false,
                     name: '',
                     loading: false,
@@ -612,6 +701,15 @@
                             ]);
                         };
                     }
+                    // 购物袋列
+                    if (item.key === 'bag') {
+                        item.render = (h, param) => {
+                            let currentRowData = vm.tableData[param.index];
+                            return h('div', [
+                                bagButton(vm, h, currentRowData, param.index)
+                            ]);
+                        };
+                    }
                     // 状态列
                     if (item.key === 'status') {
                         item.render = (h, param) => {
@@ -712,6 +810,39 @@
                         };
                     }
                 });
+                // 初始化购物袋表格
+                this.bagColumns.forEach(item => {
+                    // 图片列
+                    if (item.key === 'goods_img') {
+                        item.render = (h, param) => {
+                            let currentRowData = vm.bagData[param.index];
+                            if (currentRowData.goods_img) {
+                                return h('img', {
+                                    style: {
+                                        width: '40px',
+                                        height: '40px',
+                                        cursor: 'pointer',
+                                        'margin-top': '5px'
+                                    },
+                                    attrs: {
+                                        src: currentRowData.goods_img,
+                                        shape: 'square',
+                                        size: 'large'
+                                    },
+                                    on: {
+                                        click: (e) => {
+                                            vm.formItem.avatarurl = currentRowData.goods_img;
+                                            vm.formItem.name = currentRowData.goods_name;
+                                            vm.modalSeeingImg.show = true;
+                                        }
+                                    }
+                                });
+                            } else {
+                                return h('Tag', {}, '暂无图片');
+                            }
+                        };
+                    }
+                });
                 this.uploadUrl = config.baseUrl + 'Index/upload';
                 this.uploadHeader = {'ApiAuth': sessionStorage.getItem('apiAuth')};
                 this.getArea();
@@ -787,15 +918,25 @@
                 this.addressShow.pageSize = size;
                 this.getAddressList();
             },
-            // 收货地址改变当前页
+            // 优惠券改变当前页
             changeCouponPage (page) {
                 this.couponShow.currentPage = page;
                 this.getCouponList();
             },
-            // 收货地址改变分页数据条数
+            // 优惠券改变分页数据条数
             changeCouponSize (size) {
                 this.couponShow.pageSize = size;
                 this.getCouponList();
+            },
+            // 购物袋改变当前页
+            changeBagPage (page) {
+                this.bagShow.currentPage = page;
+                this.getBagList();
+            },
+            // 购物袋改变分页数据条数
+            changeBagSize (size) {
+                this.bagShow.pageSize = size;
+                this.getBagList();
             },
             // 搜索
             search () {
@@ -877,6 +1018,35 @@
                     if (res.code === 1) {
                         vm.couponData = res.data.list;
                         vm.couponShow.listCount = res.data.count;
+                    } else {
+                        if (res.code === -14) {
+                            vm.$store.commit('logout', vm);
+                            vm.$router.push({
+                                name: 'login'
+                            });
+                        } else {
+                            vm.$Message.error(res.msg);
+                        }
+                    }
+                });
+            },
+            // 获取购物袋列表数据
+            getBagList () {
+                let vm = this;
+                vm.bagData = [];
+                vm.bagLoading = true;
+                axios.get('UserCon/getBag', {
+                    params: {
+                        page: vm.bagShow.currentPage,
+                        size: vm.bagShow.pageSize,
+                        user_id: vm.bagShow.user_id
+                    }
+                }).then(function (response) {
+                    let res = response.data;
+                    vm.bagLoading = false;
+                    if (res.code === 1) {
+                        vm.bagData = res.data.list;
+                        vm.bagShow.listCount = res.data.count;
                     } else {
                         if (res.code === -14) {
                             vm.$store.commit('logout', vm);
