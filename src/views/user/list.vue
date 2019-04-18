@@ -172,7 +172,7 @@
     const addressButton = (vm, h, currentRow, index) => {
         return h('Button', {
             props: {
-                type: 'info'
+                type: 'primary'
             },
             style: {
                 margin: '0 5px'
@@ -192,7 +192,7 @@
     const couponButton = (vm, h, currentRow, index) => {
         return h('Button', {
             props: {
-                type: 'success'
+                type: 'info'
             },
             style: {
                 margin: '0 5px'
