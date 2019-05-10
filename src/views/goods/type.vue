@@ -490,6 +490,7 @@
                     vm.tableLoading = false;
                     if (res.code === 1) {
                         vm.tableData = res.data.list;
+                        vm.tableShow.listCount = res.data.count;
                     } else {
                         if (res.code === -14) {
                             vm.$store.commit('logout', vm);

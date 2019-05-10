@@ -61,6 +61,9 @@
                 <FormItem label="优惠券名称" prop="name">
                     <Input v-model="formItem.name" placeholder="请输入优惠券名称"></Input>
                 </FormItem>
+                <FormItem label="获取条件(订单价格满多少可获得)" prop="condition_money">
+                    <Input v-model="formItem.condition_money" placeholder="请输入获取条件价格"></Input>
+                </FormItem>
                 <FormItem label="满价格" prop="full_money">
                     <Input v-model="formItem.full_money" placeholder="请输入满价格"></Input>
                 </FormItem>
@@ -110,6 +113,7 @@
                     vm.formItem.id = currentRow.id;
                     vm.formItem.type_id = currentRow.type_id;
                     vm.formItem.name = currentRow.name;
+                    vm.formItem.condition_money = currentRow.condition_money;
                     vm.formItem.full_money = currentRow.full_money;
                     vm.formItem.reduce_money = currentRow.reduce_money;
                     vm.formItem.describe = currentRow.describe;
@@ -206,6 +210,11 @@
                         width: 120
                     },
                     {
+                        title: '获取条件价格',
+                        align: 'center',
+                        key: 'condition_money'
+                    },
+                    {
                         title: '满价格',
                         align: 'center',
                         key: 'full_money'
@@ -267,6 +276,7 @@
                 formItem: {
                     type_id: '',
                     name: '',
+                    condition_money: '',
                     full_money: '',
                     reduce_money: '',
                     describe: '',
@@ -277,6 +287,10 @@
                 ruleValidate: {
                     name: [
                         { required: true, message: '优惠券名称不能为空', trigger: 'blur' }
+                    ],
+                    condition_money: [
+                        { required: true, message: '获取条件价格不能为空', trigger: 'blur' },
+                        { validator: validateMoney, trigger: 'blur' }
                     ],
                     full_money: [
                         { required: true, message: '满价格不能为空', trigger: 'blur' },

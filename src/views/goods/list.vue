@@ -72,6 +72,7 @@
                     </div>
                     <input v-if="formItem.img" v-model="formItem.img" type="hidden" name="image">
                     <Upload type="drag"
+                            :show-upload-list="showUploadList"
                             :action="uploadUrl"
                             :headers="uploadHeader"
                             v-if="!formItem.img"
@@ -89,6 +90,41 @@
                         <img :src="formItem.img" v-if="visible" style="width: 100%">
                     </Modal>
                 </FormItem>
+                <!--<FormItem label="商品banner" prop="banner">
+                    <div class="demo-upload-list" v-for="item in uploadList">
+                        <template v-if="item.status === 'finished'">
+                            <img :src="item.url">
+                            <div class="demo-upload-list-cover">
+                                <Icon type="ios-eye-outline" @click.native="handleView()"></Icon>
+                                <Icon type="ios-trash-outline" @click.native="handleRemove()"></Icon>
+                            </div>
+                        </template>
+                        <template v-else>
+                            <Progress v-if="item.showProgress" :percent="item.percentage" hide-info></Progress>
+                        </template>
+                    </div>
+                    <Upload
+                            ref="upload"
+                            :show-upload-list="showUploadList"
+                            :default-file-list="defaultList"
+                            :on-success="handleSuccess"
+                            :format="['jpg','jpeg','png']"
+                            :max-size="2048"
+                            :on-format-error="handleFormatError"
+                            :on-exceeded-size="handleMaxSize"
+                            :before-upload="handleBeforeUpload"
+                            multiple
+                            type="drag"
+                            action="//jsonplaceholder.typicode.com/posts/"
+                            style="display: inline-block;width:58px;">
+                        <div style="width: 58px;height:58px;line-height: 58px;">
+                            <Icon type="ios-camera" size="20"></Icon>
+                        </div>
+                    </Upload>
+                    <Modal title="View Image" v-model="visible">
+                        <img :src="'https://o5wwk8baw.qnssl.com/' + imgName + '/large'" v-if="visible" style="width: 100%">
+                    </Modal>
+                </FormItem>-->
                 <FormItem label="商品简介" prop="describe">
                     <Input v-model="formItem.describe" :autosize="{maxRows: 5, minRows: 2}" type="textarea" placeholder="请输入商品简介"></Input>
                 </FormItem>
@@ -97,9 +133,6 @@
                 </FormItem>
                 <FormItem label="商品原价" prop="original_money">
                     <Input v-model="formItem.original_money" placeholder="请输入商品原价格"></Input>
-                </FormItem>
-                <FormItem label="商品运费" prop="other_money">
-                    <Input v-model="formItem.other_money" placeholder="请输入商品运费"></Input>
                 </FormItem>
                 <FormItem style="height: 400px;" label="商品详情" prop="comment">
                     <quill-editor
@@ -171,7 +204,6 @@
                     vm.formItem.describe = currentRow.describe;
                     vm.formItem.money = currentRow.money;
                     vm.formItem.original_money = currentRow.original_money;
-                    vm.formItem.other_money = currentRow.other_money;
                     vm.formItem.comment = currentRow.comment;
                     vm.modalSetting.show = true;
                     vm.modalSetting.index = index;
@@ -372,7 +404,6 @@
                     img: '',
                     money: '',
                     original_money: '',
-                    other_money: '',
                     comment: '',
                     id: 0
                 },
@@ -395,10 +426,6 @@
                         { required: true, message: '商品原价格不能为空', trigger: 'blur' },
                         { validator: validateMoney, trigger: 'blur' }
                     ],
-                    other_money: [
-                        { required: true, message: '商品运费不能为空', trigger: 'blur' },
-                        { validator: validateMoney, trigger: 'blur' }
-                    ],
                     img: [
                         { required: true, message: '请上传商品封面', trigger: 'change' }
                     ]
@@ -409,10 +436,24 @@
                 idList: '',
                 // 编辑/添加弹窗中显示大图
                 visible: false,
+                // 是否显示上传列表
+                showUploadList: false,
                 // 上传地址
                 uploadUrl: '',
                 // 上传头部信息
                 uploadHeader: {},
+                /*defaultList: [
+                    {
+                        'name': 'a42bdcc1178e62b4694c830f028db5c0',
+                        'url': 'https://o5wwk8baw.qnssl.com/a42bdcc1178e62b4694c830f028db5c0/avatar'
+                    },
+                    {
+                        'name': 'bc7521e033abdd1e92222d733590f104',
+                        'url': 'https://o5wwk8baw.qnssl.com/bc7521e033abdd1e92222d733590f104/avatar'
+                    }
+                ],
+                imgName: '',
+                uploadList: [],*/
                 // 初始化富文本编辑器
                 editorOption: {
                     modules: {
@@ -438,6 +479,9 @@
             this.init();
             this.getGoodsType();
             this.getList();
+        },
+        mounted () {
+            this.uploadList = this.$refs.upload.fileList;
         },
         methods: {
             // 初始化页面
@@ -668,6 +712,31 @@
                     this.$Message.error(response.msg);
                 }
             },
+            /*handleSuccess (res, file) {
+                file.url = 'https://o5wwk8baw.qnssl.com/7eb99afb9d5f317c912f08b5212fd69a/avatar';
+                file.name = '7eb99afb9d5f317c912f08b5212fd69a';
+            },
+            handleFormatError (file) {
+                this.$Notice.warning({
+                    title: 'The file format is incorrect',
+                    desc: 'File format of ' + file.name + ' is incorrect, please select jpg or png.'
+                });
+            },
+            handleMaxSize (file) {
+                this.$Notice.warning({
+                    title: 'Exceeding file size limit',
+                    desc: 'File  ' + file.name + ' is too large, no more than 2M.'
+                });
+            },
+            handleBeforeUpload () {
+                const check = this.uploadList.length < 5;
+                if (!check) {
+                    this.$Notice.warning({
+                        title: 'Up to five pictures can be uploaded.'
+                    });
+                }
+                return check;
+            },*/
             // 富文本编辑器一系列
             onEditorBlur () {
             },

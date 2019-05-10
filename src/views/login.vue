@@ -63,6 +63,7 @@
         },
         methods: {
             handleSubmit () {
+                this.$Message.loading('登录中');
                 this.$refs.loginForm.validate((valid) => {
                     if (valid) {
                         let vm = this;
@@ -70,6 +71,7 @@
                             username: this.form.username,
                             password: this.form.password
                         }).then(function (response) {
+                            vm.$Message.destroy();
                             if (response.data.code === 1) {
                                 vm.$store.commit('login', response.data.data);
                                 vm.$Message.success(response.data.msg);
